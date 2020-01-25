@@ -1,6 +1,5 @@
-# This is the original pursuit-evasion.py algorithm, with added comments
+# This is the original pursuit-evasion.py algorithm, with added comments on EVERYTHING how neat :)
 # Cody Dillinger
-#
 
 import sys, random, math, pygame, time	    #import all available modules into the listed packages
 from pygame.locals import *		    #puts limited set of constants and functions into global namespace of script
@@ -8,51 +7,51 @@ from math import *
 
 length=500		             #size of window showing the game
 width=700
-ability_evader=10	         #velocity
+ability_evader=10	             #velocity ability
 vertex_number=5000
 capture_distance=10
 
-white = 255, 255, 255
+white = 255, 255, 255		     #RGB vals
 black = 0, 0, 0
 red = 255, 0, 0
 green = 0, 255, 0
 blue = 0, 0, 255
 pink=200, 20, 240
 
-UEflag=0		             #when 0: ordinary pursuit-evasion game, no uncertainty estimation, can change ability_pursuer
+UEflag=0		             #when ueflag 0: ordinary pursuit-evasion game, no uncertainty estimation, can change ability_pursuer
 
-pygame.init()		  						                #initialize all imported pygame modules
+pygame.init()		  						#initialize all imported pygame modules
 screen = pygame.display.set_mode((length,width))			#initialize window for display
 pygame.display.set_caption('persuit-evasion game')			#label the window
 
 def distance(x1,x2):							#define distance() function
   return sqrt((x1[0]-x2[0])*(x1[0]-x2[0])+(x1[1]-x2[1])*(x1[1]-x2[1]))  
 
-class point:				                #point class
-    x=0
+class point:				                  #point class
+    x=0							  #location
     y=0
-    last=None
-    cost=0
-    time=0
+    last=None						  #keep track of previous point in tree array that is created in main
+    cost=0						  #running cost
+    time=0						  #running time
     #next=[]
     #next_choice=None
-    def __init__(self,x_value,y_value):
+    def __init__(self,x_value,y_value):			  #init function sets self x and y
          self.x=x_value
          self.y=y_value
 
-def choose_neighborhood(tree):				  #choose neighborhood function
-    count=len(tree)					  #len()
-    neighborhood_calculated=500*sqrt(log(count)/count)
-    if neighborhood_calculated<18:
+def choose_neighborhood(tree):				  #function returning neighborhood size with max 18
+    count=len(tree)					  #only depends on length of the tree array, not info on point objects
+    neighborhood_calculated=500*sqrt(log(count)/count)    #calc size using count
+    if neighborhood_calculated<18:			  #check if > 18
       return neighborhood_calculated
     else:
       return 18
 
-def collision_test(new_vertex,vertex):    
-    k=(new_vertex.y-vertex.y)/(new_vertex.x-vertex.x)
-    if (new_vertex.x<280 and new_vertex.y>400 and new_vertex.y<420) or (new_vertex.x>220 and new_vertex.y>250 and new_vertex.y<270):
-      print("delete this new vertex because of collision")
-      return 0
+def collision_test(new_vertex,vertex):    												#function checking for collisions in x-y plane!
+    k=(new_vertex.y-vertex.y)/(new_vertex.x-vertex.x)											#k = delta(y)/delta(x)
+    if (new_vertex.x<280 and new_vertex.y>400 and new_vertex.y<420) or (new_vertex.x>220 and new_vertex.y>250 and new_vertex.y<270):    #check specific x-y locations
+      print("delete this new vertex because of collision")										#print "delete.."
+      return 0																#return 0 if colliding, return 1 if no collision
     elif (new_vertex.y-400)*(vertex.y-400)<0 and (new_vertex.x-280)*(vertex.x-280)<0 and vertex.y+k*(280-vertex.x)>400:
       print("delete this new vertex because of collision")
       return 0
@@ -70,28 +69,29 @@ def collision_test(new_vertex,vertex):
 
 def extend(tree,vertex_random,ability):
     vertex=tree[0]                                                                                                                      #vertex=tree(0)
-    for x in tree:
-       if distance([x.x,x.y],[vertex_random.x,vertex_random.y])<distance([vertex.x,vertex.y],[vertex_random.x,vertex_random.y]):
-         vertex=x
-    if distance([vertex.x,vertex.y],[vertex_random.x,vertex_random.y])<ability:
-      new_vertex=vertex_random
-      time=distance([vertex.x,vertex.y],[vertex_random.x,vertex_random.y])/ability
-    else:
-      angle=atan2(vertex_random.y-vertex.y,vertex_random.x-vertex.x)
-      new=vertex.x+ability*cos(angle), vertex.y+ability*sin(angle)
-      new_vertex=point(new[0],new[1])
-      time=1
-    new_vertex.last=vertex
+    for x in tree:															#for x in tree
+       if distance([x.x,x.y],[vertex_random.x,vertex_random.y])<distance([vertex.x,vertex.y],[vertex_random.x,vertex_random.y]):	  #if dist(tree(i),rand) < dist(vertex,rand)
+         vertex=x															    #vertex=tree(i)
+    if distance([vertex.x,vertex.y],[vertex_random.x,vertex_random.y])<ability:		#if dist(vertex,rand) < ability then we can reach it!
+      new_vertex=vertex_random								  #new_vertex = rand
+      time=distance([vertex.x,vertex.y],[vertex_random.x,vertex_random.y])/ability	  #time = dist(vertex,rand) / ability
+    else:										#else we can't reach it!
+      angle=atan2(vertex_random.y-vertex.y,vertex_random.x-vertex.x)			  #angle= angle from vertex to random = atan( (randY-vertexY) / (randX-vertexX) )
+      new=vertex.x+ability*cos(angle), vertex.y+ability*sin(angle)			  #new[x,y]=vertex + ability at that angle
+      new_vertex=point(new[0],new[1])							  #new_vertex = point object with above vals
+      time=1										  #time=1 - why????????????
+											#newvertex is now either the random one or in the direction of it
+    new_vertex.last=vertex								#newvertex.last=vertex
     #vertex.next_choice=(new_vertex)
-    new_vertex.cost=vertex.cost+distance([x.x,x.y],[vertex_random.x,vertex_random.y])
-    new_vertex.time=vertex.time+time
-    neighborhood=choose_neighborhood(tree)
-    sign_1=collision_test(new_vertex,new_vertex.last)
-    if sign_1==1:
-      for x in tree:
-        if distance([x.x,x.y],[new_vertex.x,new_vertex.y])<neighborhood and x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])<new_vertex.cost:
-          sign_2=collision_test(new_vertex,x)
-          if sign_2==1:
+    new_vertex.cost=vertex.cost+distance([x.x,x.y],[vertex_random.x,vertex_random.y])	#newvertex.cost= existing cost + dist(x,rand)
+    new_vertex.time=vertex.time+time							#newvertex.time= existing time + time
+    neighborhood=choose_neighborhood(tree)						#this function returns neighborhood < 18
+    sign_1=collision_test(new_vertex,new_vertex.last)					#returns 0 if colliding, 1 if not
+    if sign_1==1:																	#if not colliding
+      for x in tree:																	  #for x in tree
+        if distance([x.x,x.y],[new_vertex.x,new_vertex.y])<neighborhood and x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])<new_vertex.cost:	    #if newVertex w/in neighborhood for tree(i) & existingCost+potentialCost<newCost
+          sign_2=collision_test(new_vertex,x)														      #sign2=collisionTest
+          if sign_2==1:																		#if no collision
             new_vertex.last=x
             #x.next_choice=new_vertex
             new_vertex.cost=x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])
@@ -227,22 +227,22 @@ def pursuer_initialization():
       pursuer_last=pursuer
     return r1
 
-def main():								                     #main function!!!!!!!!
-    screen.fill(white)							             #initialize start and end point display
+def main():						     #main function!!!!!!!!
+    screen.fill(white)					     #initialize start and end point display
     pygame.draw.circle(screen,red,(250,150),10,0)
     pygame.draw.circle(screen,green,(450,600),10,0)
     pygame.draw.rect(screen, (0,0,0), (0,400,280,20), 0)
     pygame.draw.rect(screen, (0,0,0), (220,250,280,20), 0)  
-    pygame.display.flip()						             #update full display surface to the screen
+    pygame.display.flip()				     #update full display surface to the screen
     if UEflag==0:                                            #if ueflag=0, ordinary game
       pygame.draw.circle(screen,pink,(30,460),5,0)           #then draw pink circle
     else:
       r1=pursuer_initialization()                            #else ueflag 1, so auto-init and estimate pursuer ability
     tree=[]                                                  #init tree array
     tree_1=[]                                                #init tree_1 array
-    tree.append(point(250,150))                              #append point object to tree
+    tree.append(point(250,150))                              #append point object to tree. Tree is an array of point objects. How neat.
     evader=tree[0]                                           #evader = this appended object
-    tree_1.append(point(30,460))                             #append point object to tree_1
+    tree_1.append(point(30,460))                             #append point object to tree_1. Tree_1 is an array of point objects.
     pursuer=tree_1[0]                                        #pursuer = this appended object
     target=point(450,600)                                    #target = other point object, new location each object
     if UEflag==1:                                            #if ueflag=1, set pursuer ability to estimated val
