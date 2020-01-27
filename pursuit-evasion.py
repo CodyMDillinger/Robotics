@@ -87,34 +87,35 @@ def extend(tree,vertex_random,ability):
     new_vertex.time=vertex.time+time							#newvertex.time= existing time + time
     neighborhood=choose_neighborhood(tree)						#this function returns neighborhood < 18
     sign_1=collision_test(new_vertex,new_vertex.last)					#returns 0 if colliding, 1 if not
-    if sign_1==1:																	#if not colliding
-      for x in tree:																	  #for x in tree
-        if distance([x.x,x.y],[new_vertex.x,new_vertex.y])<neighborhood and x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])<new_vertex.cost:	    #if newVertex w/in neighborhood for tree(i) & existingCost+potentialCost<newCost
-          sign_2=collision_test(new_vertex,x)														      #sign2=collisionTest
-          if sign_2==1:																		#if no collision
-            new_vertex.last=x																	  #newVert.last = tree(i)
+    if sign_1==1:									#if not colliding
+      for x in tree:									#for x in tree
+        if distance([x.x,x.y],[new_vertex.x,new_vertex.y])<neighborhood and x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])<new_vertex.cost:     #if newVertex w/in neighborhood for tree(i) & existingCost+potentialCost<newCost
+          sign_2=collision_test(new_vertex,x)									#returns 1 if no collision
+          if sign_2==1:												#if no collision
+            new_vertex.last=x											#newVert.last = tree(i)
             #x.next_choice=new_vertex
-            new_vertex.cost=x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])										  #newVert.cost = existing cost in tree)i) + additional
-            new_vertex.time=x.time+distance([x.x,x.y],[new_vertex.x,new_vertex.y])/ability									  #newVert.time = existing time in tree(i) + additional
+            new_vertex.cost=x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])				#newVert.cost = existing cost in tree)i) + additional
+            new_vertex.time=x.time+distance([x.x,x.y],[new_vertex.x,new_vertex.y])/ability			#newVert.time = existing time in tree(i) + additional
             #x.next.append(new_vertex)
-      tree.append(new_vertex)																  #append newVert to tree array							
+      tree.append(new_vertex)											#append newVert to tree array							
       #new_vertex.last.next.append(new_vertex)
-      pygame.draw.line(screen,black,[new_vertex.last.x,new_vertex.last.y],[new_vertex.x,new_vertex.y])							  #update image with tree vertices
-      pygame.display.flip()																  #update display
-      for i in xrange(len(tree)):															  #for length of tree array
+      pygame.draw.line(screen,black,[new_vertex.last.x,new_vertex.last.y],[new_vertex.x,new_vertex.y])		#update image with tree vertices
+      pygame.display.flip()											#update display
+      for i in xrange(len(tree)):										#for length of tree array
         x=tree[i]
-        if x!=new_vertex.last and distance([x.x,x.y],[new_vertex.x,new_vertex.y])<neighborhood and distance([x.x,x.y],[new_vertex.x,new_vertex.y])+new_vertex.cost<x.cost: #if newVert not same tree & newVert is in neighborhood of tree & 
-          sign_3=collision_test(x,new_vertex)
-          if sign_3==1:
-            pygame.draw.line(screen,white,[x.x,x.y],[x.last.x,x.last.y])
-            x.last=new_vertex
+        #if newVert not same tree and in neighborhood of tree & prevCost+2*dist(treei,newVert)<prevCost
+	if x!=new_vertex.last and distance([x.x,x.y],[new_vertex.x,new_vertex.y])<neighborhood and distance([x.x,x.y],[new_vertex.x,new_vertex.y])+new_vertex.cost<x.cost:
+          sign_3=collision_test(x,new_vertex)							#returns 1 if no collision
+          if sign_3==1:										#if no collision
+            pygame.draw.line(screen,white,[x.x,x.y],[x.last.x,x.last.y])			#update window from tree(i) to previous tree with white -> "erasing" black?
+            x.last=new_vertex									#update tree(i).last to newVert
             #new_vertex.next.append(x)
-            x.cost=distance([x.x,x.y],[new_vertex.x,new_vertex.y])+new_vertex.cost
-            x.time=distance([x.x,x.y],[new_vertex.x,new_vertex.y])/ability+new_vertex.time
-            tree[i]=x
-            pygame.draw.line(screen,black,[x.x,x.y],[x.last.x,x.last.y])
-            pygame.display.flip()
-      return new_vertex
+            x.cost=distance([x.x,x.y],[new_vertex.x,new_vertex.y])+new_vertex.cost		#update tree(i) cost as newVertCost + dist(tree(i),newVert)
+            x.time=distance([x.x,x.y],[new_vertex.x,new_vertex.y])/ability+new_vertex.time	#update tree(i) time using dist/ability
+            tree[i]=x										#update tree(i) from x which we updated above
+            pygame.draw.line(screen,black,[x.x,x.y],[x.last.x,x.last.y])			#update window from tree(i) to newVert
+            pygame.display.flip()								#update display of window
+      return new_vertex										#return newVert ! !
 
 def extend_1(tree_1,vertex_random,ability):
     vertex=tree_1[0]
@@ -163,17 +164,17 @@ def extend_1(tree_1,vertex_random,ability):
       return new_vertex
 
 def path_choose(tree, evader, target):
-    vertex=tree[0]
-    path=[]
-    for x in tree:
-      if distance([x.x,x.y],[target.x,target.y])<distance([vertex.x,vertex.y],[target.x,target.y]):
-        vertex=x
-    while vertex!=evader:
-      path.append(vertex)
-      pygame.draw.line(screen,blue,[vertex.x,vertex.y],[vertex.last.x,vertex.last.y],5)
-      vertex=vertex.last
-      pygame.display.flip()
-    return path
+    vertex=tree[0]											#vertex=tree[0]
+    path=[]												#new array path
+    for x in tree:											#for all of tree
+      if distance([x.x,x.y],[target.x,target.y])<distance([vertex.x,vertex.y],[target.x,target.y]):	#if target closer to tree(i) than tree(0 or prev update) = if dist(tree(i),target)<dist(tree(0),target)
+        vertex=x											#then update vertex to tree(i)
+    while vertex!=evader:										#while vertex is not evader
+      path.append(vertex)										#append vertex to path
+      pygame.draw.line(screen,blue,[vertex.x,vertex.y],[vertex.last.x,vertex.last.y],5)			#update window with blue path, from vertex to last vertex
+      vertex=vertex.last										#update vertex to the previous one
+      pygame.display.flip()										#update display of blue path
+    return path												#return path object ! ! !
 
 def pursuer_initialization():
     t=0
