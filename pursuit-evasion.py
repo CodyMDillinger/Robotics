@@ -92,18 +92,18 @@ def extend(tree,vertex_random,ability):
         if distance([x.x,x.y],[new_vertex.x,new_vertex.y])<neighborhood and x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])<new_vertex.cost:	    #if newVertex w/in neighborhood for tree(i) & existingCost+potentialCost<newCost
           sign_2=collision_test(new_vertex,x)														      #sign2=collisionTest
           if sign_2==1:																		#if no collision
-            new_vertex.last=x
+            new_vertex.last=x																	  #newVert.last = tree(i)
             #x.next_choice=new_vertex
-            new_vertex.cost=x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])
-            new_vertex.time=x.time+distance([x.x,x.y],[new_vertex.x,new_vertex.y])/ability
-            #x.next.append(new_vertex) 
-      tree.append(new_vertex)
+            new_vertex.cost=x.cost+distance([x.x,x.y],[new_vertex.x,new_vertex.y])										  #newVert.cost = existing cost in tree)i) + additional
+            new_vertex.time=x.time+distance([x.x,x.y],[new_vertex.x,new_vertex.y])/ability									  #newVert.time = existing time in tree(i) + additional
+            #x.next.append(new_vertex)
+      tree.append(new_vertex)																  #append newVert to tree array							
       #new_vertex.last.next.append(new_vertex)
-      pygame.draw.line(screen,black,[new_vertex.last.x,new_vertex.last.y],[new_vertex.x,new_vertex.y])
-      pygame.display.flip()
-      for i in xrange(len(tree)):
+      pygame.draw.line(screen,black,[new_vertex.last.x,new_vertex.last.y],[new_vertex.x,new_vertex.y])							  #update image with tree vertices
+      pygame.display.flip()																  #update display
+      for i in xrange(len(tree)):															  #for length of tree array
         x=tree[i]
-        if x!=new_vertex.last and distance([x.x,x.y],[new_vertex.x,new_vertex.y])<neighborhood and distance([x.x,x.y],[new_vertex.x,new_vertex.y])+new_vertex.cost<x.cost:
+        if x!=new_vertex.last and distance([x.x,x.y],[new_vertex.x,new_vertex.y])<neighborhood and distance([x.x,x.y],[new_vertex.x,new_vertex.y])+new_vertex.cost<x.cost: #if newVert not same tree & newVert is in neighborhood of tree & 
           sign_3=collision_test(x,new_vertex)
           if sign_3==1:
             pygame.draw.line(screen,white,[x.x,x.y],[x.last.x,x.last.y])
