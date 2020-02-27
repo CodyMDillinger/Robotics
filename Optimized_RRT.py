@@ -73,15 +73,17 @@ def updateTree():
 
 ##################################################################################################################################
 def main():
+  vertexNum = input('Enter number of vertices')             # adjustable number of tree vertices each time you run the code
+  
   pyWindow.fill(white)                                      # set background of pygame window to white  
   pygame.draw.circle(pyWindow, red,   (250, 150), 10, 0)    # display starting point with red circle
   pygame.draw.circle(pyWindow, green, (450, 600), 10, 0)    # display destination point with green circle
   pygame.draw.rect(pyWindow, black, (0, 400, 280, 20), 0)   # display black rectangle obstacle
   pygame.draw.rect(pyWindow, black, (220, 250, 280, 20), 0) # display black rectangle obstacle
-  pygame.display.flip()
+  pygame.display.flip()                                     # update display with these new shapes
   
-  tree = []; tree.append( point(250, 150) )
-
+  tree = []; tree.append( point(250, 150) )                 # create new tree with starting vertex at 250, 150
+  target = point(450, 600)                                  # create destination target at 450, 600
 ##################################################################################################################################
 if __name__ == '__main__':
   main()
