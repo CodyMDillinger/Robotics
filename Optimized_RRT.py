@@ -27,17 +27,14 @@ length = 500                              # set constants for pygame window size
 width = 700
 maxVelocity = 10                          # max velocity of drone
 
-white = 255, 255, 255                     # RGB color values for pygame window viewing
-black = 0, 0, 0
-red = 255, 0, 0
-green = 0, 255, 0
-blue = 0, 0, 255
-pink=200, 20, 240
+white = 255, 255, 255; black = 0, 0, 0;   # RGB color values, black for obstacles
+red =   255, 0, 0;     green = 0, 255, 0  # green and red for destination and starting point respectively
+blue =  0, 0, 255;     pink =  200, 20, 240
 
 pygame.init()                                           # initialize usage of pygame
 pyWindow = pygame.display.set_mode( (length, width) )   # create pygame display
 
-class point:
+class point:                        # tree array will contain these point objects
   x = 0
   y = 0
   last = None
@@ -47,7 +44,7 @@ class point:
     self.x = xVal
     self.y = yVal
  
-def distance( pt1, pt2 ):     # return distance between two points from two point objects
+def distance( pt1, pt2 ):          # return distance between two points from two point objects
   return sqrt( (pt1.x - pt2.x)^2 - (pt1.y - pt2.y)^2 )
 
 def sampleFree():
@@ -82,6 +79,8 @@ def main():
   pygame.draw.rect(pyWindow, black, (0, 400, 280, 20), 0)   # display black rectangle obstacle
   pygame.draw.rect(pyWindow, black, (220, 250, 280, 20), 0) # display black rectangle obstacle
   pygame.display.flip()
+  
+  tree = []; tree.append( point(250, 150) )
 
 ##################################################################################################################################
 if __name__ == '__main__':
