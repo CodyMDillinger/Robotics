@@ -48,6 +48,7 @@ def distance( pt1, pt2 ):          # return distance between two points from two
   return sqrt( (pt1.x - pt2.x)^2 - (pt1.y - pt2.y)^2 )
 
 def sampleFree():
+  xRand = point( random.random()*length, random.random()*width )
   return 0
 
 def nearest():
@@ -73,7 +74,7 @@ def updateTree():
 
 ##################################################################################################################################
 def main():
-  vertexNum = input('Enter number of vertices')             # adjustable number of tree vertices each time you run the code
+  vertexNum = input('Enter number of random samples: ')     # adjustable number of tree vertices each time you run the code
   
   pyWindow.fill(white)                                      # set background of pygame window to white  
   pygame.draw.circle(pyWindow, red,   (250, 150), 10, 0)    # display starting point with red circle
@@ -84,6 +85,10 @@ def main():
   
   tree = []; tree.append( point(250, 150) )                 # create new tree with starting vertex at 250, 150
   target = point(450, 600)                                  # create destination target at 450, 600
+  for i in range(vertexNum):
+    print "iteration num = %d" %i
+    xRand = sampleFree()
+
 ##################################################################################################################################
 if __name__ == '__main__':
   main()
