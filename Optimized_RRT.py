@@ -10,11 +10,12 @@
 # nearest()     find the nearest vertex in the tree to that random sample
 # steer()       find point in the direction of random sample but within some radius of the nearest vertex
 # collision()   If there is no obstacle on the edge between steer() point and nearest() vertex,
-# near()        check for other vertices in tree that are within some radius of the steer() point, where the radius is a functin of the number of samples
+# near()        check for other vertices in tree that are within some radius of the steer() point, where the radius is a function of the number of samples
 # Add the steer() point to the tree
 # costCompare() for each vertices in near() check if the total path cost from starting point to this vertex is less than through the nearest() vertex
 # addEdge()     add edge between steer() point and the chosen lowest-cost path from list of near() vertices
 # updateTree()  update parents of the vertices
+#####################################################################################################################################
 #####################################################################################################################################
 #####################################################################################################################################
 
@@ -34,6 +35,7 @@ blue =  0, 0, 255;     pink =  200, 20, 240
 pygame.init()                                           # initialize usage of pygame
 pyWindow = pygame.display.set_mode( (length, width) )   # create pygame display
 
+#######################################
 class point:                        # tree array will contain these point objects
   x = 0
   y = 0
@@ -43,36 +45,49 @@ class point:                        # tree array will contain these point object
   def __init__(self, xVal, yVal):
     self.x = xVal
     self.y = yVal
- 
+#######################################
 def distance( pt1, pt2 ):          # return distance between two points from two point objects
-  return sqrt( (pt1.x - pt2.x)^2 - (pt1.y - pt2.y)^2 )
-
-def sampleFree():
+  return sqrt( (pt1.x - pt2.x)*(pt1.x - pt2.x) + (pt1.y - pt2.y)*(pt1.y - pt2.y) )
+#######################################
+def sampleFree():		   # return random point object with x,y within pygame window size
   xRand = point( random.random()*length, random.random()*width )
-  return 0
-
-def nearest():
-  return 0
-
+  return xRand
+#######################################
+def nearest(xRand1, tree1):
+  vertex = tree1[0]
+  for treeVert in tree1:
+    if ( distance(treeVert, xRand1) < distance(vertex, xRand1) ):
+      vertex = treeVert
+  return vertex
+#######################################
 def steer():
   return 0
-
+#######################################
 def collision():
   return 0
-
+#######################################
 def near():
   return 0
-
-def costCompare():
+#######################################
+def cost():
   return 0
-
+#######################################
 def addEdge():
   return 0
-  
+#######################################
 def updateTree():
   return 0
+#######################################
+def updateDisplay(tree1, oldTree1, index1):
+  for i in range(index1, len(oldTree1) - index1):
+    pygame.draw.line(pyWindow, white, [oldTree1(i-1).x, oldTree1(i-1).y], [oldTree1(i).x, oldTree1(i).y])
+  for i in range(index1, len(tree1) - index1):
+    pygame.draw.line(pyWindow, black, [tree1(i-1).x, tree1(i-1).y], [tree1(i).x, tree1(i).y])
+  pygame.display.flip()
+  return 0
 
-##################################################################################################################################
+#####################################################################################################################################
+#####################################################################################################################################
 def main():
   vertexNum = input('Enter number of random samples: ')     # adjustable number of tree vertices each time you run the code
   
@@ -85,9 +100,29 @@ def main():
   
   tree = []; tree.append( point(250, 150) )                 # create new tree with starting vertex at 250, 150
   target = point(450, 600)                                  # create destination target at 450, 600
+  costMin = 0
   for i in range(vertexNum):
-    print "iteration num = %d" %i
-    xRand = sampleFree()
+    oldTree = tree
+    xRand = sampleFree()				    # get random sample within pygame window size, as a point object
+    xNearest = nearest(xRand, tree)			    # get vertex in tree that is nearest to the random sample, as an index
+    #xRadius = Steer(xNearest, xRand, radius)		    # get point in direction of xrand from xNearest (if it is too far away), as a point object
+    #if (collision(xRadius, xNearest) == false):	    # if no collision
+      #nearVertices = near()  				    # return just indices of tree
+      #tree.append(xRadius)
+      #xMin = xNearest;
+      #costMin = costMin+distance(xNearest,xRadius)
+      #for i in nearVertices
+        #costNear = cost(tree(i))+distance(tree(i),xRadius)
+        #costNearest = cost(tree(len(tree)-1))+distance(tree(xNearest),xRadius)
+        #if (collision(tree(i),xRadius) == false and costNear < costNearest):
+          #xMin = tree(i)
+          #costMin = costNear
+      #addEdge(xMin, xRadius)
+      #for i in nearVertices
+        #if collision(tree(i),xRadius) == false and costNearest+cost(
+
+    indexSimplified = 0
+    updateDisplay(tree, oldTree, indexSimplified)           # update from earliest unchanged index
 
 ##################################################################################################################################
 if __name__ == '__main__':
