@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Cody Dillinger - Cody.M.Dillinger@gmail.com
 # This .py script will utilize the optimized RRT algorithm, referred to as RRT*, to generate a single path from starting point to destination
 # As the path planning tree forms, it displays the tree to the user in a pygame window using the pygame library
@@ -21,7 +24,7 @@
 #####################################################################################################################################
 #####################################################################################################################################
 
-import sys, random, math, pygame, time    # import necessary libraries
+import os, sys, random, math, pygame, time    # import necessary libraries
 from pygame.locals import *
 from math import*
 pygame.init()                             # initialize usage of pygame
@@ -29,9 +32,13 @@ pygame.init()                             # initialize usage of pygame
 length = 500                              # set constants for pygame window size
 width = 700
 maxVelocity = 10                          # max velocity of drone
-radius = 20				  # constant radius for steer() function
+radius = 10				  # constant radius for steer() function
 xStart = 450; yStart = 50
 xEnd= 50; yEnd = 650
+totalSpace = (width*length) - (280*20*2)  # total size of window minus size of obstacles
+unitBall = pi				  # see https://arxiv.org/abs/1105.1186
+gamma = 2 * sqrt(3) * sqrt( (totalSpace / unitBall) )   # RRT* asymptotically stable if gamma* > (2*(1+1/d))^(1/d)*(u(Xfree)/ζd)^(1/d)
+destRadius = 50				  # radius within destination to be considered "at destination"
 
 white = 255, 255, 255; black = 0, 0, 0    # RGB color values, black for obstacles
 red =   255, 0, 0;     green = 0, 255, 0  # green and red for destination and starting point respectively
@@ -56,53 +63,57 @@ def distance( pt1, pt2 ):                # return distance between two points fr
 #######################################
 def sampleFree():		         # return pseudo random point object
   xRand = Point( random.random()*length, random.random()*width )
-  #see if adding collision check will eventually result in path
-  #maybe add [seed] into random.random to increase randomness
-  #add bias towards destination
+  #add bias towards destination ? Right now there is bias towards center technically, which works well for current layout
   return xRand
 #######################################
-def nearest(xRand1, tree1):	         # return index of the point in tree which is closest to random sampled point
-  iClosest = 0				 # future - this loop makes this whole algorithm O(n^2) ? Shouldn't.
+def nearest(xRand1, tree1):	         # return point object from tree which is closest to random sampled point
+  iClosest = 0				 # (brute force method - check all vertices)
   for i in range(len(tree1)):
     if ( distance(tree1[i], xRand1) < distance(tree1[iClosest], xRand1) ):
       iClosest = i
-  return iClosest
+  return tree1[iClosest]
 #######################################
 def steer(xNearest1, xRand1, radius1):            # return point object in direction of random sample but within radius of nearest vertex
   if (distance(xNearest1,xRand1) > radius1):
+
     deltaY = (xRand1.y - xNearest1.y)
     deltaX = (xRand1.x - xNearest1.x)
-    m = deltaY / deltaX
-    theta = atan(abs(m))			  # note: used abs(theta) due to inverted y axis
 
-    if deltaX == 0:				  # for unlikely case of random sample having same x val
-      xNew = xNearest1.x
-      if deltaY > 0:
-        yNew = xNearest1.y + radius1
-      elif deltaY < 0:
-        yNew = xNearest1.y - radius1
-    if deltaY == 0:				  # for unlikely case of random sample having same y val
-      yNew = xNearest1.y
-      if deltaX > 0:
-        xNew = xNearest1.x + radius1
-      elif deltaX < 0:
-        xNew = xNearest1.x - radius1
+#    atan2() function already does all of this
+#    m = deltaY / deltaX
+#    theta = atan(abs(m))			  # note: used abs(theta) due to inverted y axis
 
-    if deltaX > 0:				  # 4 cases for 4 quadrants
-      if deltaY > 0:
-        xNew = xNearest1.x + radius1*cos(theta)
-        yNew = xNearest1.y + radius1*sin(theta)
-      else:
-        xNew = xNearest1.x + radius1*cos(theta)
-        yNew = xNearest1.y - radius1*sin(theta)
-    else:
-      if deltaY > 0:
-        xNew = xNearest1.x - radius1*cos(theta)
-        yNew = xNearest1.y + radius1*sin(theta)
-      else:
-        xNew = xNearest1.x - radius1*cos(theta)
-        yNew = xNearest1.y - radius1*sin(theta)
+#    if deltaX == 0:				  # for unlikely case of random sample having same x val
+#      xNew = xNearest1.x
+#      if deltaY > 0:
+#        yNew = xNearest1.y + radius1
+#      elif deltaY < 0:
+#        yNew = xNearest1.y - radius1
+#    if deltaY == 0:				  # for unlikely case of random sample having same y val
+#      yNew = xNearest1.y
+#      if deltaX > 0:
+#        xNew = xNearest1.x + radius1
+#    elif deltaX < 0:
+#       xNew = xNearest1.x - radius1
 
+#    if deltaX > 0:				  # 4 cases for 4 quadrants
+#      if deltaY > 0:
+#        xNew = xNearest1.x + radius1*cos(theta)
+#        yNew = xNearest1.y + radius1*sin(theta)
+#      else:
+#        xNew = xNearest1.x + radius1*cos(theta)
+#        yNew = xNearest1.y - radius1*sin(theta)
+#    else:
+#      if deltaY > 0:
+#        xNew = xNearest1.x - radius1*cos(theta)
+#        yNew = xNearest1.y + radius1*sin(theta)
+#      else:
+#        xNew = xNearest1.x - radius1*cos(theta)
+#        yNew = xNearest1.y - radius1*sin(theta)
+
+    theta = atan2(deltaY, deltaX)
+    xNew = xNearest1.x + radius1*cos(theta)
+    yNew = xNearest1.y + radius1*sin(theta)
     xNew1 = Point(xNew, yNew)
   else:
     xNew1 = xRand1
@@ -133,23 +144,20 @@ def collision(pt, ptNew):	   # checking for intersection, not made to easily sca
     return 1                       # if hit obstacle 2
   return 0
 #######################################
-def near(rad, tree1, xNew1):       # find vertices that are within radius of xNew1
+def near(rad, tree1, xNew1):       # find vertices that are within radius of xNew1 (brute force method - check all vertices)
   nearVertices = []
   for i in range(len(tree1)):
     if (distance(tree1[i], xNew1) < rad):
-      nearVertices.append(i)
+      nearVertices.append(tree1[i])
   return nearVertices
 #######################################
-def cost():
-
-  return 0
+def cost(pt):			   # probs dont need this
+  cost = pt.last.cost + distance(pt, pt.last)
+  return cost
 #######################################
-def addEdge(pt1, pt2, tree1): #pts are just element nums. pt1 to pt2 - direction is important
-  pygame.draw.line(pyWindow, black, [tree1[pt1].x, tree1[pt1].y], [tree1[pt2].x, tree1[pt2].y])
+def addEdge(pt1, pt2, color, size):	   	   #pts are just element nums. pt1 to pt2 - direction is important
+  pygame.draw.line(pyWindow, color, [pt1.x, pt1.y], [pt2.x, pt2.y], size)
   pygame.display.flip()
-  return 0
-#######################################
-def eraseEdge():
   return 0
 
 #####################################################################################################################################
@@ -163,44 +171,56 @@ def main():
   pygame.draw.rect(pyWindow, black, (220, 250, 280, 20), 0)  # display black rectangle obstacle
   pygame.display.flip()                                      # update display with these new shapes
 
-  vertexNum = input('Enter number of random samples: ')     # adjustable number of tree vertices each time you run the code
+  vertexNum = input('Enter number of vertices for tree ')    # adjustable number of tree vertices each time you run the code
 
-  tree = []; tree.append( Point(xStart,yStart) )            # create new tree with starting vertex at 250, 150
-  target = Point(xEnd, yEnd)                                # create destination target at 450, 600
-  costMin = 0
-  numVertices = 1
-  for i in range(vertexNum):
-    xRand = sampleFree()				    # get random sample within pygame window size, as a point object
-    xNearest = nearest(xRand, tree)			    # get vertex in tree that is nearest to the random sample, as an index
-    xNew = steer(tree[xNearest], xRand, radius)		    # get point in direction of xrand from xNearest (if it is too far away), as a point object
-    print 'xNear = ', floor(tree[xNearest].x), floor(tree[xNearest].y)
-    print 'xRand = ', floor(xRand.x), floor(xRand.y)
-    print 'xNew1 = ', xNew.x, xNew.y
-    if (collision(tree[xNearest], xNew) == 0):		    # if no collision
-      numVertices = numVertices+1			    # number of vertices or nodes, in the tree
-      totalSpace = (width*length) - (280*20*2)		    # total size of window minus size of obstacles
-      unitBall = pi					    # double check this ****************************************************************
-      gamma = 2 * sqrt(3) * sqrt( (totalSpace / unitBall) ) # RRT* asymptotically stable if gamma* > (2*(1+1/d))^(1/d)*(μ(Xfree)/ζd)^(1/d)
+  tree = []; tree.append( Point(xStart,yStart) )             # create new tree with starting vertex at 250, 150
+  target = Point(xEnd, yEnd)                                 # create destination target at 450, 600
+  tree[0].last = tree[0]				     # first vertex .last points to itself
+  numVertices = 1					     # starting with one vertex
+  nearDest = []						     # stores points arbitrarily close to the destination
+  
+  while numVertices < vertexNum:
+    xRand = sampleFree()				     # get random sample within pygame window size, as a point object
+    xNearest = nearest(xRand, tree)			     # get vertex nearest to the random sample, as point object
+    xNew = steer(xNearest, xRand, radius)		     # get point in direction of xrand from xNearest (if it is too far away), as a point object
+    #print 'xNear = ', floor(xNearest.x), floor(xNearest.y)
+    #print 'xRand = ', floor(xRand.x), floor(xRand.y)
+    #print 'xNew1 = ', floor(xNew.x), floor(xNew.y)
+    if (collision(xNearest, xNew) == 0):		     # if no collision
+      numVertices = numVertices+1			     # number of vertices or nodes, in the tree
       nearRadius = min(gamma * sqrt(log(numVertices) / numVertices),  radius)
-      nearVertices = near(nearRadius, tree, xNew)	    # return just indices of tree. radius here is function of number of existing samples
-      tree.append(xNew)				  	    # append this point element to array regardless of path
-      xMin = xNearest;					    # variable for lowest cost point, initializing under assumption of xNearest
-      costMin = cost(numVertices-1, tree)		    # variable for lowest cost. These may be changed for one of Near vertices
-      #for j in nearVertices						     # connect along a minimum cost path by checking near vertices
-        #costNear = cost(j, tree) + distance(tree(j),xNew)		     # cost of path through near vertex
-        #if (collision(tree(j),xNew) == false and costNear < costMin):       # if near path is lower cost and no collision
-          #xMin = j							     # update xMin for this shorter path
-          #costMin = costNear						     # update costMin for this shorter path
-      #tree(i).last = tree(xMin)
-      addEdge(xMin, numVertices-1, tree)				     # add edge on pygame visual AND update parent
-      #for j in nearVertices						     # rewire tree / update parents if xnear is not on its shortest path
-        #newCost = cost(numVertices-1)+distance(xNew,tree(j))			     # potential new cost of xNear
-        #if (collision(tree(j),xNew) == false and newCost < cost(tree(j))):
-          #eraseEdge(tree(j),tree(j).last)				     # erase edge on pygame visual
-          #addEdge(numVertices-1, j, tree)				     # add edge on pygame visual and update parent
-    #time.sleep(.01)
-  print 'final numVertices = ', numVertices
-  print 'final tree size = ', len(tree)
+      nearVertices = near(nearRadius, tree, xNew)	     # return point objects. nearRadius is function of num existing samples
+      tree.append(xNew)				  	     # append this point element to array regardless of path
+      xMin = xNearest;					     # variable for lowest cost point, initializing under assumption of xNearest
+      costMin = xMin.cost		    	 	     # variable for lowest cost. May be changed for one of Near vertices
+      for j in range(len(nearVertices)):		     # connect along a minimum cost path by checking near vertices
+        costNear = nearVertices[j].cost + distance(nearVertices[j],xNew)     # cost of path through near vertex
+        if (collision(tree[j],xNew) == 0 and costNear < costMin):            # if near path is lower cost and no collision
+          xMin = nearVertices[j]					     # update xMin for this shorter path
+          costMin = costNear						     # update costMin for this shorter path
+      xNew.last = xMin
+      xNew.cost = costMin
+      addEdge(xMin, xNew, black, 1)					     # add edge on pygame visual AND update parent
+      for j in range(len(nearVertices)):				     # rewire tree / update parents if xnear is not on its shortest path
+        newCost = xNew.cost + distance(xNew,tree[j])			     # potential new cost of xNear
+        if (collision(nearVertices[j],xNew) == 0 and newCost < nearVertices[j].cost):  # if potential new path < that points existing path
+          addEdge(nearVertices[j], nearVertices[j].last, white, 1)	     # erase edge on pygame visual
+          nearVertices[j].last = xNew					     # adjust parent node
+          addEdge(xNew, nearVertices[j], black, 1)			     # add edge on pygame visual
+
+    if distance(xNew, target) < destRadius:
+      nearDest.append(xNew)
+
+  # end while loop ######################
+  destMin = nearDest[0]
+  for j in (range(len(nearDest) - 1)):
+    destMin = min(destMin, nearDest[j+1])
+  path = destMin
+  i = 0
+  while path.last != path:
+    addEdge(path, path.last, blue, 5)
+    path = path.last
+
   return
 
 ##################################################################################################################################
