@@ -1,7 +1,9 @@
-Owned by Penn State Networked Robotics Systems Laboratory :)
+Owned by Penn State Networked Robotics Systems Laboratory :)   http://nrsl.mne.psu.edu
 
-Using pygame window to display motion planning algorithms
+Using pygame to display motion planning algorithms, integration with Gazebo to simulate vehicle motion
 
-pursuit-evasion = Backup of python script from   https://github.com/Shicheng-Liu/pursuit_evasion_game or https://github.com/JackYuan18/Ardrone_pursuit_evasion   but with added comments.
+RRT, RRT*, Multi-robot game-theoretic trajectory-based, multi-robot game-theoretic policy-based
 
-Optimized_RRT = algorithm from https://arxiv.org/abs/1105.1186
+RRT*:  https://arxiv.org/abs/1105.1186
+Trajectory-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/Zhu-Otte-ICRA14.pdf
+Policy-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/DJ-MZ-AR-IFAC15.pdf

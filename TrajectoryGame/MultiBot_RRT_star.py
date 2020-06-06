@@ -20,12 +20,12 @@ def create_shape(pts):                           # given a set of Vertices, conn
 
 def draw_shape(shape, pywindow):                                          # outline border of shape on pywindow
     for pt_num in range(len(shape)):                                      # for all vertices in the shape
-        x1, y1 = shape[pt_num].x, shape[pt_num].y
-        x2, y2 = shape[pt_num].obs_next.x, shape[pt_num].obs_next.y
-        if x1 == x2:
-            x1 = x1 - .5; x2 = x2 - .5
-        elif y1 == y2:
-            y1 = y1 - .5; y2 = y2 - .5
+        x1, y1 = shape[pt_num].x, shape[pt_num].y                         # point from
+        x2, y2 = shape[pt_num].obs_next.x, shape[pt_num].obs_next.y       # point to
+        if x1 == x2:                        # if vertical edge
+            x1 = x1 - .5; x2 = x2 - .5      # show display slightly offset left
+        elif y1 == y2:                      # if horizontal edge
+            y1 = y1 - .5; y2 = y2 - .5      # show display slightly offset up
         pygame.draw.line(pywindow, Colors.black, (x1, y1), (x2, y2), 3)   # connect edge between them
 ##############################################################################################################
 
@@ -265,7 +265,7 @@ def extend_graph(x_rand, robot_root, obstacles, goal_set, pywindow, color_):  # 
 
 
 def main():
-    pywindow, obstacles = init_pywindow('RRT Without Inter-robot Collision Checking')                       # set up pygame window, dimensions and obstacles
+    pywindow, obstacles = init_pywindow('Something')                       # set up pygame window, dimensions and obstacles
     start, goal_set, num_robots, robo_colors = user_prompt(pywindow)             # prompt for num bots, start, end positions
     k = 1; k_ = 1500
     while k < k_:                                                   # main loop
