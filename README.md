@@ -9,3 +9,5 @@ RRT*:  https://arxiv.org/abs/1105.1186
 Trajectory-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/Zhu-Otte-ICRA14.pdf
 
 Policy-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/DJ-MZ-AR-IFAC15.pdf
+
+![](Multi_Bot_RRT.gif)
