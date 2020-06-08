@@ -10,4 +10,6 @@ Trajectory-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/Zhu
 
 Policy-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/DJ-MZ-AR-IFAC15.pdf
 
-![](Multi_Bot_RRT.gif|width="100")
+<img src="https://github.com/CodyMDillinger/Robotics/Multi_Bot_RRT.gif">
+
+![](Multi_Bot_RRT.gif)
