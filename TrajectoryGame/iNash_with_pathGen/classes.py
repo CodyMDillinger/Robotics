@@ -5,12 +5,14 @@
 import math
 from math import*
 
+
 class Vertex:
     def __init__(self, x_val, y_val):  # initialize with x, y coordinates
         self.x = x_val
         self.y = y_val
         self.children = []
         self.parents = []
+        self.paths = [[]]
 
     def add_child(self, child):
         self.children.append(child)
@@ -18,15 +20,21 @@ class Vertex:
     def add_parent(self, parent):
         self.parents.append(parent)
 
+    def add_path(self, path_):
+        self.paths.append(path_)
+
+    def add_path_vertex(self, i, vertex_):
+        self.paths[i].append(vertex_)
+
     x = 0
     y = 0
-    obs_next = None         # for shape edges (obstacles and goal set)
-    cost = 0
+    obs_next = None                 # for shape edges (obstacles and goal set)
     at_goal_set = False
-    k_nearest = 0                   # for avoiding checking points multiple times in recursion search
+    k_nearest = 0                   # for avoiding checking points multiple times in recursion searches
     k_near = 0
 
-class Colors:               # RGB color values
+
+class Colors:                       # RGB color values
     def __init__(self):
         pass
 
@@ -71,7 +79,7 @@ class Dimensions:
     window_length = 500     # size of pywindow display
     window_width = 700
     tree_radius = 7         # size of radius for steering point towards random vertex
-    eta = tree_radius       # size of radius in comparison for min() function in near() function
+    eta = tree_radius  # size of radius in comparison for min() function in near() function
 
     # Vertices of static obstacles
     # Algorithm works for any number of obstacles with any number of vertices
