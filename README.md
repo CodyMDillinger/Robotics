@@ -10,6 +10,10 @@ Trajectory-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/Zhu
 
 Policy-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/DJ-MZ-AR-IFAC15.pdf
 
-First gif is RRT but for multiple robots. 2nd, 3rd, and 4th gifs are the iNash trajectory algorithm without the pathGeneration() or inter-robot collision checking yet; the difference between the three is the near_radius size, notice the difference in how many connections tend to form from a given vertex. 5th image is iNash trajectory with non-optimal pathGeneration added.
+First gif is RRT but for multiple robots.
 
-<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/Multi_Bot_RRT.gif" width="450" height="450"/> <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNash_extend_equal_eta.gif" width="450" height="450"/> <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNash_extend_largerish_eta.gif" width="450" height="450"/> <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNash_extend_larger_eta.gif" width="450" height="450"/> <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNash_with_pathGen.gif" width="450" height="450"/>
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/Multi_Bot_RRT.gif" width="450" height="450"/>
+Next 3 gifs are the iNash trajectory algorithm without the pathGeneration() or inter-robot collision checking yet; the difference between the three is the near_radius size, notice the difference in how many connections tend to form from a given vertex.
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNash_extend_equal_eta.gif" width="450" height="450"/> <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNash_extend_largerish_eta.gif" width="450" height="450"/> <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNash_extend_larger_eta.gif" width="450" height="450"/>
+Next gif is iNash trajectory with non-optimal pathGeneration added. Still no inter-robot collision checking
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNash_with_pathGen.gif" width="450" height="450"/>
