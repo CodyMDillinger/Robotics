@@ -128,12 +128,42 @@ def user_prompt(pywindow):         # prompt for num robots, start and end positi
 ##############################################################################################################
 
 
-def sample_free():		         # return pseudo random Vertex object with coordinates uniformly in pywindow
-    return Vertex(random.random() * Dimensions.window_length, random.random() * Dimensions.window_width)
+def get_bias_box(goal_x, goal_y):                   # get a box within pygame window centered around goal set
+    w = .5 * Dimensions.window_width
+    h = .5 * Dimensions.window_length
+    if goal_x + w / 2 > Dimensions.window_width:
+        x_r = Dimensions.window_width
+        x_l = Dimensions.window_width - w
+    elif goal_x - w / 2 < 0:
+        x_l = 0
+        x_r = w
+    else:
+        x_r = goal_x + w / 2
+        x_l = goal_x - w / 2
+    if goal_y + h / 2 > Dimensions.window_length:
+        y_large = Dimensions.window_length
+        y_small = Dimensions.window_length - h
+    elif goal_y - h / 2 < 0:
+        y_small = 0
+        y_large = h
+    else:
+        y_small = goal_y - h / 2
+        y_large = goal_y + h / 2
+    return x_l, x_r, y_small, y_large
 ##############################################################################################################
 
 
-def dist(pt1, pt2):              # calculate distance between two points
+def sample_free(path, goal_set):     # return pseudo random Vertex object
+    if path == []:                   # with coordinates uniformly in pywindow
+        return Vertex(random.random() * Dimensions.window_length, random.random() * Dimensions.window_width)
+    else:                            # with coordinates biased towards goal
+        x_l, x_r, y_sm, y_lar = get_bias_box(goal_set[0].x + Dimensions.goal_set_size, goal_set[0].y + Dimensions.goal_set_size)
+        vert = Vertex((random.random() * (x_r - x_l)) + x_l, (random.random() * (y_lar - y_sm)) + y_sm)
+        return vert
+##############################################################################################################
+
+
+def dist(pt1, pt2):                  # calculate distance between two points
     return sqrt((pt1.x - pt2.x)**2 + (pt1.y - pt2.y)**2)
 ##############################################################################################################
 
@@ -227,11 +257,15 @@ def trace_inclusivity(x_nearest, x_new, goal_set):  # check that trajectory does
 
 
 def steer(x_nearest, x_rand, goal_set):                               # steer nearest vertex towards random Vertex, within some radius
-    theta = atan2(x_rand.y - x_nearest.y, x_rand.x - x_nearest.x)     # atan2 accounts for different quadrants
-    x_new = x_nearest.x + Dimensions.tree_radius * cos(theta)         # new x value
-    y_new = x_nearest.y + Dimensions.tree_radius * sin(theta)         # new y value
-    vertex_new = Vertex(x_new, y_new)                                 # initialize vertex
-    vertex_new_ = trace_inclusivity(x_nearest, vertex_new, goal_set)  # if hits goal, adjust vertex to intersection pt
+    if dist(x_nearest, x_rand) < Dimensions.tree_radius:
+        vertex_new = x_rand
+        vertex_new_ = trace_inclusivity(x_nearest, vertex_new, goal_set)
+    else:
+        theta = atan2(x_rand.y - x_nearest.y, x_rand.x - x_nearest.x)     # atan2 accounts for different quadrants
+        x_new = x_nearest.x + Dimensions.tree_radius * cos(theta)         # new x value
+        y_new = x_nearest.y + Dimensions.tree_radius * sin(theta)         # new y value
+        vertex_new = Vertex(x_new, y_new)                                 # initialize vertex
+        vertex_new_ = trace_inclusivity(x_nearest, vertex_new, goal_set)  # if hits goal, adjust vertex to intersection pt
     return vertex_new_
 ##############################################################################################################
 
@@ -239,8 +273,8 @@ def steer(x_nearest, x_rand, goal_set):                               # steer ne
 def add_edge(pt_new, pt_tree, color_, size, pywindow):   # update children and parents for new connections
     pt_new.add_parent(pt_tree)                           # update parent list of new vertex
     pt_tree.add_child(pt_new)                            # update child list of vertex that the new one is connecting to
-    #pygame.draw.line(pywindow, color_, (pt_new.x, pt_new.y), (pt_tree.x, pt_tree.y), size)
-    #pygame.display.flip()
+    pygame.draw.line(pywindow, color_, (pt_new.x, pt_new.y), (pt_tree.x, pt_tree.y), size)
+    pygame.display.flip()
     return
 ##############################################################################################################
 
@@ -257,7 +291,24 @@ def near_vertices(vertex_new, current_vertex, k, vertices_near):  # return all v
 ##############################################################################################################
 
 
-def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_, k):  # add vertex and edges to sets for robot i
+def check_cycles(vertex_tree, vertex_compare, found):   # check if vertex_tree has any children that are vertex_compare
+    if found:
+        return found
+    if vertex_compare == vertex_tree:
+        found = True
+        return found
+    else:
+        for i in range(len(vertex_tree.children)):
+            found = check_cycles(vertex_tree.children[i], vertex_compare, found)
+            if found:
+                print 'found cycle'
+                return found
+    print 'paths checked, no cycles'
+    return found
+##############################################################################################################
+
+
+def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_, k, path):  # add vertex and edges to sets for robot i
     vertex_nearest = nearest(vertex_rand, robot_root, robot_root, k)                  # find nearest vertex in robot i's graph, starting with root
     vertex_new = steer(vertex_nearest, vertex_rand, goal_set)                         # steer that vertex towards x_rand within some radius
     collision_, intersect = collisions(vertex_nearest, vertex_new, obstacles, 'obstacles')
@@ -266,7 +317,14 @@ def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_,
         for i in range(len(vertices_near)):                                    # for all near vertices
             collision_, intersect = collisions(vertices_near[i], vertex_new, obstacles, 'obstacles')
             if collision_ == 0:                                                # if no collision
-                add_edge(vertex_new, vertices_near[i], color_, 1, pywindow)    # connect the dots
+                if path == [] or i < 2:
+                    add_edge(vertex_new, vertices_near[i], color_, 1, pywindow)     # only extend graph if no path yet
+                else:                                                               # also form reverse connections once path exists
+                    cycle = check_cycles(vertices_near[i], vertex_new, False)
+                    if cycle is True:                                               # if other direction has cycle
+                        add_edge(vertex_new, vertices_near[i], color_, 1, pywindow)
+                    else:                                                           # if other direction has no cycle, connect for more optimal possibilities
+                        add_edge(vertices_near[i], vertex_new, color_, 1, pywindow)
     return vertex_new
 ##############################################################################################################
 
@@ -278,7 +336,7 @@ def path_generation2(vertex):  # tree traversal. get all paths root to vertex. u
     costs = []
     for i in range(len(vertex.parents)):           # for all parents
         parent = vertex.parents[i]
-        pths, csts = path_generation2(parent)       # get all paths and costs for that parent
+        pths, csts = path_generation2(parent)      # get all paths and costs for that parent
         paths_parents.append(pths)                 # append paths to path list
         costs_parents.append(csts)                 # append costs to cost list
     # separating a list of lists of paths into one list of paths:
@@ -297,39 +355,6 @@ def path_generation2(vertex):  # tree traversal. get all paths root to vertex. u
         vertex.add_cost(0)
         vertex.add_path([vertex])
     return paths, costs
-##############################################################################################################
-
-
-#def path_generation(vertex):  # tree traversal. get all paths root to vertex. update vertex.path_list[[]] and vertex.costs[]
-#    if vertex.paths == []:                             # if haven't calculated paths to this point yet
-#        paths_parents = []                             # list of paths, path = list of vertices
-#        costs_parents = []                             # list of costs associated with some paths
-#        paths = []
-#        costs = []
-#        for i in range(len(vertex.parents)):           # for all parents
-#            parent = vertex.parents[i]
-#            pths, csts = path_generation(parent)       # get all paths and costs for that parent
-#            paths_parents.append(pths)                 # append paths to path list
-#            costs_parents.append(csts)                 # append costs to cost list
-#        # separating a list of lists of paths into one list of paths:
-#        for i in range(len(paths_parents)):                        # for number of lists of paths (number of parents)
-#            distance = dist(vertex, vertex.parents[i])             # calculate distance for each new parent
-#            for j in range(len(paths_parents[i])):                 # for number of paths in one of those lists
-#                paths.append(paths_parents[i][j])                  # append that path to new total list
-#                costs.append(costs_parents[i][j] + distance)       # append that parent cost + distance to new total cost list
-#        for i in range(len(paths)):                 # for every path in paths
-#            paths[i].append(vertex)                 # add the current vertex to that path
-#            vertex.add_path(paths[i])               # add these paths to vertex object to avoid recalculating later
-#            vertex.add_cost(costs[i])               # add these costs to vertex object '' '' ''
-#        if len(paths) == 0:                         # if this vertex is the root node
-#            paths = [[vertex]]                      # only "path" is itself, and has zero cost
-#            costs = [0]
-#            vertex.add_cost(0)
-#            vertex.add_path([vertex])
-#    else:                                           # if already traversed from this vertex
-#        paths = vertex.paths                        # use those saved paths
-#        costs = vertex.costs                        # use those saved costs
-#    return paths, costs
 ##############################################################################################################
 
 
@@ -374,11 +399,11 @@ def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i):  #
     if vertex.at_goal_set:                                         # only obtain new paths if new pt is at goal
         path_list_vertex, cost_list_vertex = path_generation2(vertex)
         string = []
-        print 'new goal set vertex.'
-        for i in range(len(path_list_vertex)):
-            for j in range(len(path_list_vertex[i])):
-                string.append(floor(path_list_vertex[i][j].x))
-                string.append(floor(path_list_vertex[i][j].y))
+        #print 'new goal set vertex.'
+        for k in range(len(path_list_vertex)):
+            for j in range(len(path_list_vertex[k])):
+                string.append(floor(path_list_vertex[k][j].x))
+                string.append(floor(path_list_vertex[k][j].y))
             #print string
     # enter collision free path procedure here for inter-robot collisions
 
@@ -437,12 +462,12 @@ def main():
     pywindow, obstacles = init_pywindow('iNash trajectory, optimized, no inter-robot collision checking')         # set up pygame window, dimensions and obstacles
     start, goal_set, num_robots, robo_colors = user_prompt(pywindow)          # prompt for num bots, start, end positions
     all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num = init_arrays(num_robots)
-    k = 1; k_ = 4000
+    k = 1; k_ = 20000
     while k < k_:                                                             # main loop
         new_vertices = [None] * num_robots                                    # get list of new vertices each k iteration
         for i in all_bots:                                                    # for all robots
-            vertex_rand = sample_free()                                       # get random Vertex uniformly in pywindow
-            vertex_new = extend_graph(vertex_rand, start[i], obstacles, goal_set[i], pywindow, robo_colors[i], k)
+            vertex_rand = sample_free(paths[i], goal_set[i])                  # get random Vertex uniformly in pywindow
+            vertex_new = extend_graph(vertex_rand, start[i], obstacles, goal_set[i], pywindow, robo_colors[i], k, paths[i])
             if vertex_new.at_goal_set:
                 path_exists = True
                 goal_pts[i].append(vertex_new)                # use for easier path_generation() later
@@ -475,6 +500,7 @@ def main():
                     #string.append(floor(paths[i][F].x))
                     #string.append(floor(paths[i][F].y))
                 #print string
+        print 'k is', k
         k = k + 1
     print 'main loop exited'
     for i in range(num_robots):                             # for all bots
@@ -486,7 +512,7 @@ def main():
                 for F in range(len(goal_pts[i][j].paths[P])):
                     string.append(floor(goal_pts[i][j].paths[P][F].x))
                     string.append(floor(goal_pts[i][j].paths[P][F].y))
-                print 'robot', i, ', goalpt', j, ',path', P, ':', string
+                #print 'robot', i, ', goalpt', j, ',path', P, ':', string
                 #display_path(goal_pts[i][j].paths[P], pywindow, Colors.dark_green)  # display
     return
 ##############################################################################################################

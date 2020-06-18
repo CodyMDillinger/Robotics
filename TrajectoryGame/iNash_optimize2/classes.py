@@ -72,18 +72,21 @@ class Color_:                  # for easy iterating between colors for unknown n
 class Dimensions:
     def __init__(self):
         pass
-    window_length = 500    # size of pywindow display
-    window_width = 700
-    tree_radius = 10       # size of radius for steering point towards random vertex
-    eta = tree_radius + 4  # size of radius in comparison for min() function in near() function
+
+    window_length = 1000  # size of pywindow display
+    window_width = 1000
+    tree_radius = 10  # size of radius for steering point towards random vertex
+    eta = tree_radius  # size of radius in comparison for min() function in near() function
+    goal_set_size = 14
 
     # Vertices of static obstacles
     # Algorithm works for any number of obstacles with any number of vertices
     # Only small changes here and within obstacle_generation() function
     # Pay attention to vertex order
-    window = [Vertex(0, 0), Vertex(0, 700), Vertex(500, 700), Vertex(500, 0)]
-    obstacle1 = [Vertex(0, 455), Vertex(0, 475), Vertex(280, 475), Vertex(280, 455)]
+    window = [Vertex(0, 0), Vertex(0, window_width), Vertex(window_length, window_width), Vertex(window_length, 0)]
+    # obstacle1 = [Vertex(0, 455), Vertex(0, 475), Vertex(280, 475), Vertex(280, 455)]
     obstacle2 = [Vertex(220, 225), Vertex(220, 245), Vertex(500, 245), Vertex(500, 225)]
+    obstacle1 = [Vertex(200, 420), Vertex(200, 490), Vertex(250, 490), Vertex(250, 420)]
 
     # For near() vertices functionality, simplified for 2-D motion planning
     unit_ball = 3.1415926
