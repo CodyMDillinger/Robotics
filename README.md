@@ -22,5 +22,5 @@ Next gif is iNash trajectory with optimal path chosen added. No inter-robot coll
 For a larger number of robots, we will want each robot to have a larger variety of paths. Not just in the number of possible paths, but the number of very different paths. This will increase likelihood of avoiding collisions. Attempt below was: once one path is found, enable the ability of adding edges in the reverse direction, so that more paths can end up at the goal. This requires checking for directed cycles before adding, and added too much computational complexity.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNash_Trajectory_Optimize2.gif" width="450" height="450"/>
 Here is the first "final" algorithm, with no additions to the exact design in the paper (ignoring additions attempted in previous gif). First gif shows the tree, second one only displays paths.
-img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNashTrajFinal1_tree.gif" width="450" height="450"/>
-img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNashTrajFinal1_noTree.gif" width="450" height="450"/>
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNashTrajFinal1_tree.gif" width="450" height="450"/>
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNashTrajFinal1_noTree.gif" width="450" height="450"/>
