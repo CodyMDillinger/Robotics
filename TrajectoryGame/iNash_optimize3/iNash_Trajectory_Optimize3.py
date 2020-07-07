@@ -8,7 +8,7 @@
 import os, sys, random, math, pygame, time
 from pygame.locals import *
 from math import*
-from classes import Vertex, Colors, Color_, Dimensions, Settings
+from classes import Vertex, Colors, Color_, Dimensions
 ##############################################################################################################
 
 
@@ -335,13 +335,13 @@ def path_generation(vertex):
 
 
 def path_generation2(vertex):  # tree traversal. get all paths root to vertex. update vertex.path_list[[]] and vertex.costs[]
-    #if vertex.paths == []:
-        #print 'paths empty'
-    paths, costs = path_generation(vertex)
-    #else:
-    #    print 'paths already stored'
-    #    paths = set_to(vertex.paths)
-    #    costs = set_to(vertex.costs)
+    if vertex.paths == []:
+        print 'paths empty'
+        paths, costs = path_generation(vertex)
+    else:
+        print 'paths already stored'
+        paths = set_to(vertex.paths)
+        costs = set_to(vertex.costs)
     return paths, costs
 ##############################################################################################################
 
@@ -354,109 +354,53 @@ def set_to(path):                # set two paths equal without making them the s
 ##############################################################################################################
 
 
-def find_optimal_path(paths, costs, opt_path, opt_cost, i):
+def find_optimal_path(goalpts, opt_path, opt_cost, i):
     changed = False
     if len(opt_path) == 0:                              # if this is first time getting a path for robot i
-        opt_path = paths[0]                             # just select first path option. optimizations happen later
-        opt_cost = costs[0]
+        opt_path = goalpts[0].paths[0]                  # just select first path option. optimizations happen later
+        opt_cost = goalpts[0].costs[0]
         changed = True
         print 'first path cost:', opt_cost
+        clr = Colors.turquoise
     else:
-        if len(costs) != len(paths):
-            print 'path and cost list not aligned?'
-        for j in range(len(paths)):             # for all paths
-            if costs[j] < opt_cost:             # if the cost is lower
-                opt_cost = costs[j]             # then update it as the optimal one
-                opt_path = paths[j]
-                changed = True
-                print 'more optimal path found for robot', i, ', cost:', opt_cost
-                print 'path_num:', j
-                string = []
-                for k in range(len(opt_path)):
-                    string.append(floor(opt_path[k].x)); string.append(floor(opt_path[k].y))
-                #print string
-                return opt_path, opt_cost, changed     # return upon first optimal path found for computational efficiency
-    return opt_path, opt_cost, changed
+        clr = Colors.dark_orange
+        for j in range(len(goalpts)):                   # for all vertices at the goal set
+            for q in range(len(goalpts[j].costs)):      # for all paths to root from that vertex
+                if len(goalpts[j].costs) != len(goalpts[j].paths):
+                    print 'path and cost lists not aligned?'
+                if goalpts[j].costs[q] < opt_cost:      # if the path is more optimal
+                    opt_path = goalpts[j].paths[q]      # then update path and cost
+                    opt_cost = goalpts[j].costs[q]
+                    changed = True
+                    print 'more optimal path found for robot', i, ', cost:', opt_cost
+                    print 'goal point:', j, floor(goalpts[j].x), floor(goalpts[j].y), 'path_num:', q
+                    string = []
+                    for F in range(len(opt_path)):
+                        string.append(floor(opt_path[F].x)); string.append(floor(opt_path[F].y))
+                    #print string
+                    return opt_path, opt_cost, changed, clr           # break the loop for computational efficiency
+    return opt_path, opt_cost, changed, clr
 ##############################################################################################################
 
 
-def get_time(path, robo_num, times):  # simple version for holonomic, velocity is controlled / constant-magnitude
-    if len(times) == 0:
-        times.append(0)
-        for i in range(len(path) - 1):
-            add_time = dist(path[i], path[i + 1]) / Settings.robo_velocities[robo_num]
-            times.append(times[i] + add_time)
-    # else times is already calculated
-    return
-##############################################################################################################
-
-
-def paths_collision_free(path1, path2, robo1_num, robo2_num, times1, times2):                  # check for collisions between two paths
-    collision_free = 1
-    j = 0
-    get_time(path1, robo1_num, times1)
-    if path2 is not None:
-        get_time(path2, robo2_num, times2)
-        for k in range(len(path1)):
-            j = 0
-            robo_ability = Dimensions.tree_radius / Settings.robo_velocities[robo1_num]
-            #print 'times1 size:', len(times1), 'path1 size:', len(path1)
-            #print 'times2 size:', len(times2), 'path2 size:', len(path2)
-            ignore = False
-            while times1[k] - times2[j] > robo_ability * 1.1:
-                #print 'j', j
-                #print 'time dif', times1[k] - times2[j]
-                if j == len(times2) - 1:
-                    ignore = True
-                    break
-                j = j + 1
-            if ignore is False:
-                if abs(path1[k].x - path2[j].x) < 10 and abs(path1[k].y - path2[j].y) < 10:
-                    collision_free = 0
-                    #print 'collision at times', times1[k], times2[j], 'and locations', path1[k].x, path2[j].x, path1[k].y, path2[j].y
-                    return collision_free
-    # else path2 is None so collision_free = 1
-    return collision_free
-##############################################################################################################
-
-
-def collision_free_path(path_check, paths_collide, i):      # see if path_check collides with either path in paths_collide
-    j = i - 1
-    times_i = []
-    times_j = []
-    for k in range(2):
-        collision_free = paths_collision_free(path_check, paths_collide[k], i, j, times_i, times_j)    # call function for both paths
-        if collision_free == 0:
-            return collision_free
-        j = i + 1
-        times_j = []        # reset for next bot. re-use bot i times.
-    return collision_free
-##############################################################################################################
-
-
-def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i, color_):  # minimize cost while avoiding collisions with paths in pi_
-    if vertex.at_goal_set:                                                     # only obtain new paths if new pt is at goal
+def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i):  # minimize cost while avoiding collisions with paths in pi_
+    if vertex.at_goal_set:                                         # only obtain new paths if new pt is at goal
         path_list_vertex, cost_list_vertex = path_generation2(vertex)
-    collision_free_paths = []
-    costs = []
-    for j in range(len(goalpts)):
-        for k in range(len(goalpts[j].paths)):
-            #print 'goal path:', goalpts[j].paths[k]
-            #print 'pi 0:', pi_[0]
-            #print 'pi 1:', pi_[1]
-            if collision_free_path(goalpts[j].paths[k], pi_, i) == 1:
-                #print 'path is collision free'
-                collision_free_paths.append(goalpts[j].paths[k])
-                costs.append(goalpts[j].costs[k])
-            else:
-                #print 'no collision free path'
-                return [], []
+        string = []
+        #print 'new goal set vertex.'
+        for i in range(len(path_list_vertex)):
+            for j in range(len(path_list_vertex[i])):
+                string.append(floor(path_list_vertex[i][j].x))
+                string.append(floor(path_list_vertex[i][j].y))
+            #print string
+    # enter collision free path procedure here for inter-robot collisions
+
     optimal_path = set_to(path_prev_i)
     optimal_cost = costs_i
-    optimal_path, optimal_cost, changed = find_optimal_path(collision_free_paths, costs, optimal_path, optimal_cost, i)
+    optimal_path, optimal_cost, changed, clr = find_optimal_path(goalpts, optimal_path, optimal_cost, i)
     if changed:
-        display_path(path_prev_i, pywindow, Colors.black)
-        display_path(optimal_path, pywindow, color_)
+        #display_path(path_prev_i, pywindow, Colors.white)
+        display_path(optimal_path, pywindow, clr)
     return optimal_path, optimal_cost                      # feasible paths here is list of paths for one robot
 ##############################################################################################################
 
@@ -501,26 +445,20 @@ def display_path(pts, pywindow, color_):
 ##############################################################################################################
 
 
-def perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts, colors_):
+def perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts):
     i = active_bots[q]
-    if q != 0:                            # if iteration is not first
+    if q != 0:  # if iteration is not first
         j = active_bots[q - 1]
-        if paths[j] != []:
-            path_compare1 = paths[j]      # compare to robot j < i
-        else:
-            path_compare1 = None          # if there is a robot j < i but hasn't found collision free path yet
+        path_compare1 = paths[j]  # compare to robot j < i
     else:
-        path_compare1 = None              # else no robot j < i
-    if q != len(active_bots) - 1:         # if iteration is not last
+        path_compare1 = None  # else no robot j < i
+    if q != len(active_bots) - 1:  # if iteration is not last
         j2 = active_bots[q + 1]
-        if paths[j2] != []:
-            path_compare2 = paths[j2]     # compare to robot j > i
-        else:
-            path_compare2 = None          # if there is a robot j > i but hasn't found collision free path yet
+        path_compare2 = paths_prev[j2]  # compare to robot j > i
     else:
-        path_compare2 = None              # else no robot j > i
+        path_compare2 = None  # else no robot j > i
     pi_ = [path_compare1, path_compare2]  # set of two robot paths to compare to
-    paths[i], costs[i] = better_response(pi_, goal_pts[i], new_vertices[i], paths_prev[i], pywindow, costs[i], i, colors_[i])  # check for collisions with these bots
+    paths[i], costs[i] = better_response(pi_, goal_pts[i], new_vertices[i], paths_prev[i], pywindow, costs[i], i)  # check for collisions with these bots
     return
 ##############################################################################################################
 
@@ -534,10 +472,11 @@ def update_pt_lists(vertex_new, goal_pts, new_vertices, i):
 
 
 def main():
-    pywindow, obstacles = init_pywindow('i-Nash Trajectory Final 1')         # set up pygame window, dimensions and obstacles
+    path_exists = False
+    pywindow, obstacles = init_pywindow('iNash trajectory, optimization 1, no inter-robot checking')         # set up pygame window, dimensions and obstacles
     start, goal_set, num_robots, robo_colors = user_prompt(pywindow)          # prompt for num bots, start, end positions
     all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num = init_arrays(num_robots)
-    k = 1; k_ = 15000
+    k = 1; k_ = 2000
     while k < k_:                                                             # main loop
         new_vertices = [None] * num_robots                                    # get list of new vertices each k iteration
         for i in all_bots:                                                    # for all robots
@@ -549,15 +488,15 @@ def main():
                 update_active(active_bots, inactive_bots, i)  # then update the inactive and active lists
                 print 'robot', i + 1, 'became active'
         for i in active_bots:
-            paths_prev[i] = set_to(paths[i])                  # save previous path list before updating list
-        for q in range(len(active_bots)):                     # use q for easier j < i and j2 > i calculation
-            perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts, robo_colors)
+            paths_prev[i] = set_to(paths[i])                 # save previous path list before updating list
+        for q in range(len(active_bots)):                    # use q for easier j and j2 calculation
+            perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts)
         k = k + 1
     print 'main loop exited'
 
-    for i in range(num_robots):                               # for all bots
-        for j in range(len(goal_pts[i])):                     # for all goal pts for that bot
-            for P in range(len(goal_pts[i][j].paths)):        # for all points for that goal pt
+    for i in range(num_robots):                             # for all bots
+        for j in range(len(goal_pts[i])):                   # for all goal pts for that bot
+            for P in range(len(goal_pts[i][j].paths)):      # for all points for that goal pt
                 string = []
                 string.append(goal_pts[i][j].costs[P])
                 for F in range(len(goal_pts[i][j].paths[P])):
