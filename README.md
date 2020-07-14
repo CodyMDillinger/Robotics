@@ -25,6 +25,6 @@ Here is the first "final" algorithm, with no additions to the exact design in th
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNashTrajFinal1_tree.gif" width="650" height="650"/>
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNashTrajFinal1_noTree.gif" width="650" height="650"/>
 First attempt at using an approximate-nearest and approximate-near searching algorithm resulted in very non-random and less-exploring tree structure:
-<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/bad_approx_nearest.gif" width="650" height="650"/>
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/bad_approx_nearest.png" width="650" height="650"/>
 Used a k-d tree structure and subtree-pruning (as explained conceptually at https://www.cs.cmu.edu/~ckingsf/bioinfo-lectures/kdtrees.pdf, though I have some differences in my design) to improve computational complexity of near/nearest searching. Finding exact near/nearest, not approximate. Also improved pathGen computational complexity by storing previously calculated paths for given vertices. The two windows below show the speed differences real-time
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/Computational_Comparison2.gif" width="1000" height="700"/>
