@@ -27,4 +27,4 @@ Here is the first "final" algorithm, with no additions to the exact design in th
 First attempt at using an approximate-nearest and approximate-near searching algorithm resulted in very non-random and less-exploring tree structure:
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/bad_approx_nearest.gif" width="650" height="650"/>
 Used a k-d tree structure to improve computational complexity of near/nearest searching, still finding exact near/nearest. Also improved pathGen computational complexity by storing previously calculated paths for given vertices. The two windows below show the speed differences real-time
-<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/Computational_Comparison2.gif" width="700" height="700"/>
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/Computational_Comparison2.gif" width="1000" height="700"/>
