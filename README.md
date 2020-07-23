@@ -2,6 +2,8 @@ Owned by Penn State Networked Robotics Systems Laboratory :)   http://nrsl.mne.p
 
 Using pygame to display motion planning algorithms, integration with Gazebo to simulate vehicle motion
 
+Testing on Ubuntu18 and Python 2.7
+
 RRT, RRT*, Multi-robot game-theoretic trajectory-based, multi-robot game-theoretic policy-based
 
 RRT*:  https://arxiv.org/abs/1105.1186
