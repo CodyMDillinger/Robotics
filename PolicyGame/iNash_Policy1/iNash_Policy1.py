@@ -6,7 +6,7 @@
 # Root nodes are the starting points of each robot
 # Left and Right child nodes also separately used for k-d tree faster nearest/near neighbor searching
 
-import pygame, time
+import pygame, time, math
 from math import *
 from classes import Colors
 from pywindow_funcs import init_pywindow, user_prompt, world_to_y_plot, world_to_x_plot
@@ -26,7 +26,7 @@ def add_edge(pt_new, pt_tree, color_, size, pywindow):  # update children and pa
     # trajectory2 = solve_bvp_4d(pt_new, pt_tree)
     pt_tree.add_trajectory(trajectory1)
     # pt_tree.add_trajectory(trajectory2)
-    # pygame.draw.line(pywindow, color_, (pt_new.x, pt_new.y), (pt_tree.x, pt_tree.y), size)
+    pygame.draw.line(pywindow, color_, (pt_new.x, pt_new.y), (pt_tree.x, pt_tree.y), size)
     # draw_traj(pywindow, color_, pt_new, trajectory1, size)
     pygame.display.flip()
     return
@@ -40,21 +40,28 @@ def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_,
     vertex_new2 = steer4(vertex_nearest2, vertex_rand, goal_set)
     collision_, intersect = collisions(vertex_nearest2, vertex_new2, obstacles, 'obstacles')
     if collision_ == 0:
-        add_to_kd_tree(vertex_new2, robot_root, x)            # kd tree for spatial sorting and faster nearest/near searching
         # if vertex_new2.at_goal_set:
             # print 'no obstacle collision for goal set vertex, added to kd tree'
         # vertices_near = near_vertices(vertex_new2, robot_root, k, [])
         vertices_near2 = near_vertices2(vertex_new2, robot_root, robot_root, k, [], x)  # computationally efficient function
         # if vertex_new2.at_goal_set:
             # print 'near verts found:', len(vertices_near2)
+        edges_added = 0
         for i in range(len(vertices_near2)):                                    # for all near vertices
             collision_, intersect = collisions(vertices_near2[i], vertex_new2, obstacles, 'obstacles')
             if collision_ == 0:                                                 # if no collision
                 # if vertex_new2.at_goal_set:
                 # print 'no collision for near vertex, adding edge'
                 add_edge(vertex_new2, vertices_near2[i], color_, 1, pywindow)   # connect the dots
+                edges_added = edges_added + 1
             else:
                 pass  # print 'collision with near vertex'
+        if edges_added == 0:
+            print 'no edge had been added'
+            del vertex_new2
+            return None
+        else:
+            add_to_kd_tree(vertex_new2, robot_root, x)  # kd tree for spatial sorting and faster nearest/near searching
     else:
         # print 'collision, extend procedure returning None'
         del vertex_new2      # save storage if point not used
@@ -67,6 +74,7 @@ def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i, col
     if vertex is not None:
         if vertex.at_goal_set:                  # only obtain new paths if new pt is at goal
             #print 'new vertex at goal set, calling path_gen from better_response procedure'
+            print 'new goal set vertex has parents = ', vertex.parents
             path_list_vertex, cost_list_vertex = path_generation2(vertex)
             print 'path_gen2 return costs, paths values:'
             for j in range(len(path_list_vertex)):
@@ -89,12 +97,12 @@ def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i, col
     optimal_cost = costs_i
     optimal_path, optimal_cost, changed = find_optimal_path(collision_free_paths, costs, optimal_path, optimal_cost, i)
     if changed:
-        print 'path_prev:'
-        for k in range(len(path_prev_i)):
-            print path_prev_i[k].x, path_prev_i[k].y
-        print 'path now:'
-        for k in range(len(optimal_path)):
-            print optimal_path[k].x, optimal_path[k].y
+        #print 'path_prev:'
+        #for k in range(len(path_prev_i)):
+            #print path_prev_i[k].x, path_prev_i[k].y
+        #print 'path now:'
+        #for k in range(len(optimal_path)):
+            #print optimal_path[k].x, optimal_path[k].y
         display_path(path_prev_i, pywindow, Colors.white)
         display_path(optimal_path, pywindow, color_)
     return optimal_path, optimal_cost                  # feasible paths here is list of paths for one robot
@@ -127,15 +135,18 @@ def perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, 
 
 def main():
     pywindow, obstacles, axis = init_pywindow('i-Nash Policy 1')    # set up pygame window, dimensions and obstacles
-    start, goal_set, num_robots, robo_colors = user_prompt(pywindow)          # prompt for num bots, start, end positions
+    start, goal_set, num_robots, robo_colors, sign = user_prompt(pywindow)     # prompt for num bots, start, end positions
     all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num = init_arrays(num_robots)
-    k = 1; k_ = 75000
-    while k < k_:                                                             # main loop
-        new_vertices = [None] * num_robots                                    # get list of new vertices each k iteration
-        for i in all_bots:                                                    # for all robots
-            vertex_rand = sample_free(paths[i], goal_set[i])                  # get random Vertex in pywindow
-            vertex_new = extend_graph(vertex_rand, start[i], obstacles, goal_set[i], pywindow, robo_colors[i], k, axis)
-            goal_pts, new_vertices = update_pt_lists(vertex_new, goal_pts, new_vertices, i)
+    k = 1; k_ = 75000                                                          # total vertices for each robot
+    samp_bias = 0                                                              # for biased sampling. See sample_free()
+    while k < k_:                                                              # main loop
+        new_vertices = [None] * num_robots                                     # get list of new vertices each k iteration
+        for i in all_bots:                                                     # for all robots
+            vert_rand, samp_bias = sample_free(paths[i], goal_set[i], samp_bias, sign[i])  # get random Vertex in pywindow
+            vert_new = extend_graph(vert_rand, start[i], obstacles, goal_set[i], pywindow, robo_colors[i], k, axis)
+            if vert_new is not None:
+                print 'vert_new in main has parents:', vert_new.parents
+            goal_pts, new_vertices = update_pt_lists(vert_new, goal_pts, new_vertices, i)
         for i in inactive_bots:
             if new_vertices[i] is not None:
                 if new_vertices[i].at_goal_set:                   # if previously inactive bot is now active
@@ -145,7 +156,7 @@ def main():
             paths_prev[i] = list(paths[i])                        # save previous path list before updating list
         for q in range(len(active_bots)):                         # use q for easier j < i and j2 > i calculation
             perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts, robo_colors)
-        if vertex_new is not None:
+        if vert_new is not None:
             k = k + 1
         #time.sleep(.5)
     print 'main loop exited'

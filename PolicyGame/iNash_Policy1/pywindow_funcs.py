@@ -3,7 +3,7 @@
 # Cody Dillinger
 # Functions related to drawing pygame window
 
-import pygame
+import pygame, math
 from classes import Vertex, Colors, Color_, Dimensions, Axes, Settings
 ##############################################################################################################
 
@@ -87,35 +87,35 @@ def init_kd_axes():
 ##############################################################################################################
 
 
-def init_pywindow(title):                                   # first function to be called from main()
-    pygame.init()                                           # initialize usage of pygame
+def init_pywindow(title):                                  # first function to be called from main()
+    pygame.init()                                          # initialize usage of pygame
     pygame.display.set_caption(title)
     # display on pywindow three separate plots. x-y position, x.pos-x.vel, y.pos-y.vel
     x = Dimensions.window_width
     y = Dimensions.window_length + 4 * Settings.robo_vel_max + 2 * Dimensions.line_width
-    pywindow = pygame.display.set_mode((x, y))              # init size of window
-    pywindow.fill(Colors.white)                             # set background of pygame window to white
+    pywindow = pygame.display.set_mode((x, y))             # init size of window
+    pywindow.fill(Colors.white)                            # set background of pygame window to white
     obstacles = obstacle_generation()
-    for i in range(len(obstacles)):                         # for all obstacles
-        draw_shape(obstacles[i], pywindow)                  # outline borders on pywindow
+    for i in range(len(obstacles)):                        # for all obstacles
+        draw_shape(obstacles[i], pywindow)                 # outline borders on pywindow
     x = Dimensions.window_length + Dimensions.line_width + Settings.robo_vel_max
     y = x + 2 * Settings.robo_vel_max + Dimensions.line_width
     xy = x + Settings.robo_vel_max
     pygame.draw.line(pywindow, Colors.black, (0, x), (Dimensions.window_width, x), 1)
     pygame.draw.line(pywindow, Colors.black, (0, y), (Dimensions.window_width, y), 1)
     pygame.draw.line(pywindow, Colors.black, (0, xy), (Dimensions.window_width, xy), Dimensions.line_width)
-    pygame.display.flip()                                   # update display with these new shapes
+    pygame.display.flip()                                  # update display with these new shapes
     x = init_kd_axes()
-    return pywindow, obstacles, x                           # kd tree will start first row comparing x
+    return pywindow, obstacles, x                          # kd tree will start first row comparing x
 ##############################################################################################################
 
 
-def get_click_pos(i, pt_type, pt, pywindow, color_dot):     # prompt user to click pygame window, read position
-    print 'Click robot', i, pt_type, 'Vertex'               # prompt user
+def get_click_pos(i, pt_type, pt, pywindow, color_dot):    # prompt user to click pygame window, read position
+    print 'Click robot', i, pt_type, 'Vertex'              # prompt user
     waiting = 1; exit_pressed = 0
-    while waiting:                                          # loop until user has clicked, or clicked exit
-        event_click = pygame.event.poll()                   # read whether user event has occurred
-        if event_click.type == pygame.QUIT:                 # if user clicked exit
+    while waiting:                                         # loop until user has clicked, or clicked exit
+        event_click = pygame.event.poll()                  # read whether user event has occurred
+        if event_click.type == pygame.QUIT:                # if user clicked exit
             waiting = 0
             exit_pressed = 1
         elif event_click.type == pygame.MOUSEBUTTONDOWN and event_click.button == 1:  # if user clicked in pywindow
@@ -144,11 +144,21 @@ def user_prompt(pywindow):         # prompt for num robots, start and end positi
     robo_colors = color_init(num_robots)
     start = []                     # to be used for coordinates of robots start positions
     goal_set = []                  # to be used for coordinates of robots end positions
+    sign = num_robots * [None]
     i = 0
     running_ = 1
     while i < num_robots and running_:                                 # until start/stop selected for all, or exited
         exit1, start = get_click_pos(i, 'start', start, pywindow, robo_colors[i])      # get start position from user, append
         exit2, goal_set = get_click_pos(i, 'end', goal_set, pywindow, robo_colors[i])  # get end position from user, append
+        if abs(goal_set[i].x - start[i].x) > 100:
+            signx = True
+        else:
+            signx = False
+        if abs(goal_set[i].y - start[i].y) > 100:
+            signy = True
+        else:
+            signy = False
+        sign[i] = [[math.copysign(1, goal_set[i].x - start[i].x), signx], [math.copysign(1, goal_set[i].y - start[i].y), signy]]
         i = i + 1
         if exit1 == 1 or exit2 == 1:                                   # end loop if user exited
             running_ = 0
@@ -167,5 +177,5 @@ def user_prompt(pywindow):         # prompt for num robots, start and end positi
         draw_shape(goal_vel_box, pywindow)
         draw_shape(goal_vel_box2, pywindow)
     pygame.display.flip()
-    return start, goal_set2, num_robots, robo_colors
+    return start, goal_set2, num_robots, robo_colors, sign
 ##############################################################################################################

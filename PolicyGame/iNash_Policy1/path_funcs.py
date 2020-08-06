@@ -70,6 +70,7 @@ def path_generation2(vertex):  # tree traversal. get all paths root to vertex. u
         vertex.paths = list(paths)                  # update vertex objects to store these paths/costs
         vertex.costs = list(costs)
     else:                                           # otherwise use the paths already calculated
+        print 'use stored path'
         paths = [None] * len(vertex.paths)
         costs = list(vertex.costs)
         for p in range(len(vertex.paths)):
@@ -77,7 +78,10 @@ def path_generation2(vertex):  # tree traversal. get all paths root to vertex. u
             for v in range(len(vertex.paths[p])):
                 path.append(vertex.paths[p][v])
                 if vertex.paths[p][v] == vertex:
+                    print 'found vertex in stored path, ending here'
                     break
+                else:
+                    print 'using vertex in stored path, have not yet found vertex'
             paths[p] = path
     return paths, costs
 ##############################################################################################################
@@ -118,7 +122,7 @@ def get_time(path, robo_num, times, traj__):     # return list of times that rob
         for i in range(len(path) - 1):                          # for all vertices in path
             traj_num = get_traj_num(path[i], path[i + 1])
             add_time = path[i].trajectories[traj_num].t_f / traj__.num_disc_vals
-            for j in range(traj__.num_disc_vals - 1):       # for all discrete trajectory points between two pts
+            for j in range(traj__.num_disc_vals - 1):           # for all discrete trajectory points between two pts
                 times.append(times[i] + add_time)               # add a time value
     # else times is already calculated
     return

@@ -109,16 +109,17 @@ class Color_:                  # for easy iterating between colors for unknown n
 ##############################################################################################################
 
 
-class Settings:             # for adjusting game-play
+class Settings:                          # for adjusting game-play
     def __init__(self):
         pass
-    robo_velocities = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    robo_vel_max = 75
-    robo_finish_vel = 50    # velocity goal set size
-    goal_set_size = 14      #
-    robo_mass = 1.0
-    max_actuator_force = 50.0
-    force_normalized = max_actuator_force / robo_mass
+    # note: sample bias currently requires inverse to be integer - see sample_free()
+    sample_bias_iterator = 1.0 / 2.0     # fraction of random sampling that uses biased velocity sampling
+    robo_vel_max = 75                    # max velocity for all robots, size of velocity plot changes with this
+    robo_finish_vel = 50                 # magnitude of maximum velocity allowed at goal set
+    goal_set_size = 14                   # half width of position goal set box
+    robo_mass = 1.0                      # mass of point-mass robot, for 4-d 2-pt boundary value solving
+    max_actuator_force = 35.0            # maximum force used in bang-bang control
+    force_normalized = max_actuator_force / robo_mass   # acceleration = force / mass
 ##############################################################################################################
 
 
@@ -127,9 +128,9 @@ class Dimensions:               # pywindow, obstacles, radii, theorem 38 calcula
         pass
     # size of pywindow display
     window_length = 600         # length is y length
-    window_width = 600          # width is x length
+    window_width = 1000          # width is x length
     line_width = 3
-    tree_radius = 75.0          # size of radius for steering point towards random vertex
+    tree_radius = 45.0          # size of radius for steering point towards random vertex
     eta = tree_radius * 1.0001  # size of radius in comparison for min() function in near() function
 
     # Vertices of static obstacles
