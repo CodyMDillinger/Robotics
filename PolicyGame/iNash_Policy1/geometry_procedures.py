@@ -44,7 +44,7 @@ def steer(vertex_nearest, vertex_rand, goal_set):             # steer nearest ve
 
 
 def cross_prod(pt1, pt2, pt3):    # get cross product of pt with line connecting two other pts
-    #print 'nearest in cross_prod', pt1.x, pt1.y, pt1.x_vel, pt1.y_vel
+    # print 'nearest in cross_prod', pt1.x, pt1.y, pt1.x_vel, pt1.y_vel
     if (pt3.y - pt1.y) * (pt2.x - pt1.x) > (pt2.y - pt1.y) * (pt3.x - pt1.x):
         prod_ = 1
     else:

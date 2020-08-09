@@ -9,11 +9,11 @@
 import pygame, time, math
 from math import *
 from classes import Colors
-from pywindow_funcs import init_pywindow, user_prompt, world_to_y_plot, world_to_x_plot
+from pywindow_funcs import init_pywindow, user_prompt, label_button, iterate_or_stop
 from sampling_funcs import sample_free
 from geometry_procedures import collisions, steer4, norm
 from search_algorithms import nearest2, add_to_kd_tree, near_vertices2
-from path_funcs import path_generation2, find_optimal_path, collision_free_path, display_path, draw_traj
+from path_funcs import path_generation2, find_optimal_path, collision_free_path, display_path, print_paths
 from list_funcs import update_active, init_arrays, update_pt_lists
 from dynamics import solve_bvp_4d
 ##############################################################################################################
@@ -26,9 +26,9 @@ def add_edge(pt_new, pt_tree, color_, size, pywindow):  # update children and pa
     # trajectory2 = solve_bvp_4d(pt_new, pt_tree)
     pt_tree.add_trajectory(trajectory1)
     # pt_tree.add_trajectory(trajectory2)
-    pygame.draw.line(pywindow, color_, (pt_new.x, pt_new.y), (pt_tree.x, pt_tree.y), size)
+    # pygame.draw.line(pywindow, color_, (pt_new.x, pt_new.y), (pt_tree.x, pt_tree.y), size)
     # draw_traj(pywindow, color_, pt_new, trajectory1, size)
-    pygame.display.flip()
+    # pygame.display.flip()
     return
 ##############################################################################################################
 
@@ -57,7 +57,7 @@ def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_,
             else:
                 pass  # print 'collision with near vertex'
         if edges_added == 0:
-            print 'no edge had been added'
+            # print 'no edge had been added'
             del vertex_new2
             return None
         else:
@@ -73,12 +73,12 @@ def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_,
 def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i, color_):  # minimize cost while avoiding collisions with paths in pi_
     if vertex is not None:
         if vertex.at_goal_set:                  # only obtain new paths if new pt is at goal
+            path_list_vertex, cost_list_vertex = path_generation2(vertex)  # updates vertex objects to contain path/cost list
             #print 'new vertex at goal set, calling path_gen from better_response procedure'
-            print 'new goal set vertex has parents = ', vertex.parents
-            path_list_vertex, cost_list_vertex = path_generation2(vertex)
-            print 'path_gen2 return costs, paths values:'
-            for j in range(len(path_list_vertex)):
-                print cost_list_vertex[j], path_list_vertex[j]
+            #print 'new goal set vertex has parents = ', vertex.parents
+            #print 'path_gen2 return costs, paths values:'
+            #for j in range(len(path_list_vertex)):
+                #print cost_list_vertex[j], path_list_vertex[j]
     collision_free_paths = []
     costs = []
     for j in range(len(goalpts)):
@@ -133,51 +133,41 @@ def perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, 
 ##############################################################################################################
 
 
+def check_active(new_vertices, i, active_bots, inactive_bots):
+    if new_vertices[i] is not None:
+        if new_vertices[i].at_goal_set:  # if previously inactive bot is now active
+            update_active(active_bots, inactive_bots, i)  # then update the inactive and active lists
+            print 'robot', i, 'became active'
+    return
+##############################################################################################################
+
+
 def main():
-    pywindow, obstacles, axis = init_pywindow('i-Nash Policy 1')    # set up pygame window, dimensions and obstacles
+    pywindow, obstacles, axis, buttons = init_pywindow('i-Nash Policy 1')    # set up pygame window, dimensions and obstacles
     start, goal_set, num_robots, robo_colors, sign = user_prompt(pywindow)     # prompt for num bots, start, end positions
     all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num = init_arrays(num_robots)
-    k = 1; k_ = 75000                                                          # total vertices for each robot
-    samp_bias = 0                                                              # for biased sampling. See sample_free()
-    while k < k_:                                                              # main loop
-        new_vertices = [None] * num_robots                                     # get list of new vertices each k iteration
-        for i in all_bots:                                                     # for all robots
+    k = 1; k_ = 4 * 75000                                                  # total attempted vertices for each robot / 4
+    samp_bias = 0                                                          # for biased sampling. See sample_free()
+    while k < k_:                                                          # main loop
+        new_vertices = [None] * num_robots                                 # get list of new vertices each k iteration
+        for i in all_bots:                                                 # for all robots
             vert_rand, samp_bias = sample_free(paths[i], goal_set[i], samp_bias, sign[i])  # get random Vertex in pywindow
             vert_new = extend_graph(vert_rand, start[i], obstacles, goal_set[i], pywindow, robo_colors[i], k, axis)
-            if vert_new is not None:
-                print 'vert_new in main has parents:', vert_new.parents
             goal_pts, new_vertices = update_pt_lists(vert_new, goal_pts, new_vertices, i)
+            k = iterate_or_stop(pywindow, buttons, k, k_)
         for i in inactive_bots:
-            if new_vertices[i] is not None:
-                if new_vertices[i].at_goal_set:                   # if previously inactive bot is now active
-                    update_active(active_bots, inactive_bots, i)  # then update the inactive and active lists
-                    print 'robot', i, 'became active'
+            check_active(new_vertices, i, active_bots, inactive_bots)
         for i in active_bots:
             paths_prev[i] = list(paths[i])                        # save previous path list before updating list
+        k = iterate_or_stop(pywindow, buttons, k, k_)
         for q in range(len(active_bots)):                         # use q for easier j < i and j2 > i calculation
             perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts, robo_colors)
-        if vert_new is not None:
-            k = k + 1
-        #time.sleep(.5)
+            k = iterate_or_stop(pywindow, buttons, k, k_)
+        # time.sleep(.05)
     print 'main loop exited'
-    """
-    repeat = False
-    for i in range(num_robots):                                   # for all bots
-        for j in range(len(goal_pts[i])):                         # for all goal pts for that bot
-            for P in range(len(goal_pts[i][j].paths)):            # for all points for that goal pt
-                string = []
-                string.append(goal_pts[i][j].costs[P])
-                for F in range(len(goal_pts[i][j].paths[P])):
-                    string.append(floor(goal_pts[i][j].paths[P][F].x))
-                    string.append(floor(goal_pts[i][j].paths[P][F].y))
-                    #print 'vertex.paths for all vertices in path', P, ':', goal_pts[i][j].paths[P][F].paths
-                    for F2 in range(len(goal_pts[i][j].paths[P])):
-                        if goal_pts[i][j].paths[P][F] == goal_pts[i][j].paths[P][F2]:
-                            repeat = True
-                #print 'robot', i, ', goalpt', j, ',path', P, 'cost', string
-                display_path(goal_pts[i][j].paths[P], pywindow, Colors.dark_green)  # display
-                #print 'repeat is ', repeat
-    """
+    label_button(pywindow, buttons[0], 0, 'Running', Colors.dark_green, Colors.white)
+    pygame.display.flip()
+    # print_paths(num_robots, goal_pts, pywindow)
     return
 ##############################################################################################################
 

@@ -36,6 +36,49 @@ def obstacle_generation():    # return array of obstacles, obstacle is array of 
 ##############################################################################################################
 
 
+def display_generation(x, y):
+    x_ = x - Dimensions.button_width
+    displays = []
+    displays.append(create_shape([Vertex(0, 0, 0, 0), Vertex(0, y, 0, 0), Vertex(x, y, 0, 0), Vertex(x, 0, 0, 0)]))
+    displays.append(create_shape([Vertex(0, 0, 0, 0), Vertex(0, y, 0, 0), Vertex(x_, y, 0, 0), Vertex(x_, 0, 0, 0)]))
+    return displays
+##############################################################################################################
+
+
+def button_generation():
+    buttons = []
+    for i in range(len(Dimensions.button_list)):
+        buttons.append(create_shape(Dimensions.button_list[i]))
+    return buttons
+##############################################################################################################
+
+
+def label_plots(pywindow):
+    x = Dimensions.window_width + 6
+    y = Dimensions.window_length / 2
+    y2 = Dimensions.window_length + Settings.robo_vel_max
+    y3 = Dimensions.window_length + (3 * Settings.robo_vel_max)
+    font = pygame.font.SysFont(None, 20)
+    render = font.render('X Pos, Y Pos', True, Colors.dark_blue)
+    render2 = font.render('X Pos, X-Vel', True, Colors.dark_blue)
+    render3 = font.render('Y Pos, Y-Vel', True, Colors.dark_blue)
+    pywindow.blit(render, (x, y))
+    pywindow.blit(render2, (x, y2))
+    pywindow.blit(render3, (x, y3))
+    return
+##############################################################################################################
+
+
+def label_button(pywindow, button, i, button_text, color_, text_color):
+    rect_ = pygame.Rect(Dimensions.window_width + 2, 1, Dimensions.button_width, Dimensions.button_height)
+    pygame.draw.rect(pywindow, color_, rect_)
+    font = pygame.font.SysFont(None, 20)
+    render = font.render(button_text, True, text_color)
+    pywindow.blit(render, (button[i].x + 6, button[i].y + 20))
+    return
+##############################################################################################################
+
+
 def add_colors(robo_color):                      # append colors to array to use for large numbers of robot trees
     robo_color.add_color(Color_(Colors.grey))
     robo_color.add_color(Color_(Colors.dark_red))
@@ -87,26 +130,58 @@ def init_kd_axes():
 ##############################################################################################################
 
 
-def init_pywindow(title):                                  # first function to be called from main()
-    pygame.init()                                          # initialize usage of pygame
-    pygame.display.set_caption(title)
-    # display on pywindow three separate plots. x-y position, x.pos-x.vel, y.pos-y.vel
-    x = Dimensions.window_width
-    y = Dimensions.window_length + 4 * Settings.robo_vel_max + 2 * Dimensions.line_width
-    pywindow = pygame.display.set_mode((x, y))             # init size of window
-    pywindow.fill(Colors.white)                            # set background of pygame window to white
-    obstacles = obstacle_generation()
-    for i in range(len(obstacles)):                        # for all obstacles
-        draw_shape(obstacles[i], pywindow)                 # outline borders on pywindow
+def draw_buttons(pywindow, buttons):
+    for i in range(len(buttons)):
+        draw_shape(buttons[i], pywindow)
+        label_button(pywindow, buttons[i], i, Settings.button_text[i], Colors.dark_blue, Colors.white)
+    return
+##############################################################################################################
+
+
+def draw_obstacles(pywindow, obstacles):
+    for i in range(len(obstacles)):
+        draw_shape(obstacles[i], pywindow)
+    return
+##############################################################################################################
+
+
+def draw_extra(pywindow, extras):
+    for i in range(len(extras)):
+        draw_shape(extras[i], pywindow)
     x = Dimensions.window_length + Dimensions.line_width + Settings.robo_vel_max
     y = x + 2 * Settings.robo_vel_max + Dimensions.line_width
     xy = x + Settings.robo_vel_max
     pygame.draw.line(pywindow, Colors.black, (0, x), (Dimensions.window_width, x), 1)
     pygame.draw.line(pywindow, Colors.black, (0, y), (Dimensions.window_width, y), 1)
     pygame.draw.line(pywindow, Colors.black, (0, xy), (Dimensions.window_width, xy), Dimensions.line_width)
-    pygame.display.flip()                                  # update display with these new shapes
+    return
+##############################################################################################################
+
+
+def draw_shapes(pywindow, buttons, obstacles, extra_displays):
+    draw_buttons(pywindow, buttons)
+    draw_obstacles(pywindow, obstacles)
+    draw_extra(pywindow, extra_displays)
+    pygame.display.flip()  # update display with these new shapes
+    return
+##############################################################################################################
+
+
+def init_pywindow(title):                                  # first function to be called from main()
+    pygame.init()                                          # initialize usage of pygame
+    pygame.display.set_caption(title)
+    # display on pywindow three separate plots. x-y position, x.pos-x.vel, y.pos-y.vel
+    x = Dimensions.window_width + Dimensions.button_width + 1
+    y = Dimensions.window_length + 4 * Settings.robo_vel_max + 2 * Dimensions.line_width
+    pywindow = pygame.display.set_mode((x, y))             # init size of window
+    pywindow.fill(Colors.white)                            # set background of pygame window to white
+    obstacles = obstacle_generation()
+    buttons = button_generation()
+    extra_displays = display_generation(x, y)
+    label_plots(pywindow)
+    draw_shapes(pywindow, buttons, obstacles, extra_displays)
     x = init_kd_axes()
-    return pywindow, obstacles, x                          # kd tree will start first row comparing x
+    return pywindow, obstacles, x, buttons                 # kd tree will start first row comparing x
 ##############################################################################################################
 
 
@@ -136,6 +211,31 @@ def get_box_pts(x, y, delta_x, delta_y):
     pt3 = Vertex(x + delta_x, y + delta_y, 0, 0)
     pt4 = Vertex(x + delta_x, y - delta_y, 0, 0)
     return [pt1, pt2, pt3, pt4]
+##############################################################################################################
+
+
+def end_range(x, y, end_button):
+    end = False
+    if end_button[0].x <= x <= end_button[2].x and end_button[0].y <= y <= end_button[1].y:
+        end = True
+    return end
+##############################################################################################################
+
+
+def iterate_or_stop(pywindow, buttons, k, k_):
+    end_planning = False
+    event_click = pygame.event.poll()
+    if event_click.type == pygame.MOUSEBUTTONDOWN and event_click.button == 1:
+        x, y = pygame.mouse.get_pos()
+        for i in range(len(buttons)):
+            if end_range(x, y, buttons[i]):
+                end_planning = True
+                break
+    if end_planning is False:      # allow path planning to end with a click
+        k = k + 1
+    else:
+        k = k_                     # essentially a break statement
+    return k
 ##############################################################################################################
 
 

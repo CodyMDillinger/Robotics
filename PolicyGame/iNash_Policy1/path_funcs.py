@@ -70,7 +70,7 @@ def path_generation2(vertex):  # tree traversal. get all paths root to vertex. u
         vertex.paths = list(paths)                  # update vertex objects to store these paths/costs
         vertex.costs = list(costs)
     else:                                           # otherwise use the paths already calculated
-        print 'use stored path'
+        #print 'use stored path'
         paths = [None] * len(vertex.paths)
         costs = list(vertex.costs)
         for p in range(len(vertex.paths)):
@@ -78,10 +78,10 @@ def path_generation2(vertex):  # tree traversal. get all paths root to vertex. u
             for v in range(len(vertex.paths[p])):
                 path.append(vertex.paths[p][v])
                 if vertex.paths[p][v] == vertex:
-                    print 'found vertex in stored path, ending here'
+                    #print 'found vertex in stored path, ending here'
                     break
-                else:
-                    print 'using vertex in stored path, have not yet found vertex'
+                #else:
+                    #print 'using vertex in stored path, have not yet found vertex'
             paths[p] = path
     return paths, costs
 ##############################################################################################################
@@ -93,7 +93,7 @@ def find_optimal_path(paths, costs, opt_path, opt_cost, i):
         opt_path = paths[0]                             # just select first path option. optimizations happen later
         opt_cost = costs[0]
         changed = True
-        print 'first path cost:', opt_cost
+        print 'first path cost for robot', i,':', opt_cost
         #print 'first path:'
         #for k in range(len(opt_path)):
         #    print opt_path[k].x, opt_path[k].y, ' '
@@ -106,13 +106,34 @@ def find_optimal_path(paths, costs, opt_path, opt_cost, i):
                 opt_path = paths[j]
                 changed = True
                 print 'more optimal path found for robot', i, ', cost:', opt_cost
-                print 'path_num:', j
+                # print 'path_num:', j
                 string = []
                 for k in range(len(opt_path)):
                     string.append(floor(opt_path[k].x)); string.append(floor(opt_path[k].y))
                 # print string
                 return opt_path, opt_cost, changed     # return upon first optimal path found for computational efficiency
     return opt_path, opt_cost, changed
+##############################################################################################################
+
+
+def print_paths(num_robots, goal_pts, pywindow):
+    repeat = False
+    for i in range(num_robots):  # for all bots
+        for j in range(len(goal_pts[i])):  # for all goal pts for that bot
+            for P in range(len(goal_pts[i][j].paths)):  # for all points for that goal pt
+                string = []
+                string.append(goal_pts[i][j].costs[P])
+                for F in range(len(goal_pts[i][j].paths[P])):
+                    string.append(floor(goal_pts[i][j].paths[P][F].x))
+                    string.append(floor(goal_pts[i][j].paths[P][F].y))
+                    print 'vertex.paths for all vertices in path', P, ':', goal_pts[i][j].paths[P][F].paths
+                    for F2 in range(len(goal_pts[i][j].paths[P])):
+                        if goal_pts[i][j].paths[P][F] == goal_pts[i][j].paths[P][F2]:
+                            repeat = True
+                print 'robot', i, ', goalpt', j, ',path', P, 'cost', string
+                display_path(goal_pts[i][j].paths[P], pywindow, Colors.dark_green)  # display
+                print 'repeat is ', repeat
+    return
 ##############################################################################################################
 
 
@@ -152,11 +173,11 @@ def paths_collision_free(path1, path2, robo1_num, robo2_num, times1, times2):  #
                     path1[ptnum1].trajectories[traj1].states[trajnum1].y - path2[ptnum2].trajectories[traj2].states[
                         trajnum2].y) < 10:
                 collision_free = 0
-                print 'collision near times', times1[traj_total1], times2[traj_total2], 'and locations', path1[
-                    ptnum1].trajectories[traj1].states[trajnum1].x, path2[ptnum2].trajectories[traj2].states[
-                    trajnum2].x, path1[ptnum1].trajectories[traj1].states[trajnum1].y, path2[
-                    ptnum2].trajectories[traj2].states[
-                    trajnum2].y
+                #print 'collision near times', times1[traj_total1], times2[traj_total2], 'and locations', path1[
+                #    ptnum1].trajectories[traj1].states[trajnum1].x, path2[ptnum2].trajectories[traj2].states[
+                #    trajnum2].x, path1[ptnum1].trajectories[traj1].states[trajnum1].y, path2[
+                #    ptnum2].trajectories[traj2].states[
+                #    trajnum2].y
                 return collision_free
             traj_total1 = traj_total1 + 1
             trajnum1 = trajnum1 + 1
