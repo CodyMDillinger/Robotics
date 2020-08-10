@@ -58,7 +58,7 @@ def path_generation(vertex):
         paths[i].append(vertex)                # add the current vertex to that path
     if len(paths) == 0:                        # if this vertex is the root node
         paths = [[vertex]]                     # only "path" is itself, and has zero cost
-        costs = [0]
+        costs = [0.0]
     return paths, costs
 ##############################################################################################################
 

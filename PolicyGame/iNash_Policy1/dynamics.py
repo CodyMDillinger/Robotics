@@ -11,22 +11,22 @@ from math import *
 def bvp_fixed_tf(tf, pt1, pt2, dim1, dim2):  # solve 2-pt boundary value problem for 2 dimension, fixed final time
     # these calculations are solutions of the system of equations resulting from "bang-bang" but smaller slope
     a = getattr(pt1, dim2) - getattr(pt2, dim2)
-    b = (2 * getattr(pt2, dim2) * tf) + (2 * getattr(pt1, dim1)) - (2 * getattr(pt2, dim1))
-    c = (getattr(pt2, dim1) * tf) - (getattr(pt1, dim1) * tf) - (.5 * getattr(pt1, dim2) * (tf**2)) - (.5 * getattr(pt2, dim2) * (tf**2))
-    sqrt_term = (b**2) - (4*a*c)
+    b = (2.0 * getattr(pt2, dim2) * tf) + (2.0 * getattr(pt1, dim1)) - (2.0* getattr(pt2, dim1))
+    c = (getattr(pt2, dim1) * tf) - (getattr(pt1, dim1) * tf) - (.5 * getattr(pt1, dim2) * (tf**2)) - (.5 * getattr(pt2, dim2) * (tf**2.0))
+    sqrt_term = (b**2.0) - (4.0*a*c)
     if sqrt_term < 0:
         #print 'sqrt term < 0 in FIXED calculation, ugh'
         return None, None, None, None
     else:
         if a == 0:     # if initial and final velocity happen to be the same
             #print 'initial and final velocity happen to be the same'
-            ts1 = tf / 2
-            ts2 = tf / 2
+            ts1 = tf / 2.0
+            ts2 = tf / 2.0
         else:
-            ts1 = (-b + sqrt(sqrt_term)) / (2*a)
-            ts2 = (-b - sqrt(sqrt_term)) / (2*a)
-        um1 = (-a) / ((ts1 * 2) - tf)
-        um2 = (-a) / ((ts2 * 2) - tf)
+            ts1 = (-b + sqrt(sqrt_term)) / (2.0*a)
+            ts2 = (-b - sqrt(sqrt_term)) / (2.0*a)
+        um1 = (-a) / ((ts1 * 2.0) - tf)
+        um2 = (-a) / ((ts2 * 2.0) - tf)
         #print 'bvp_fixed ts,u1, ts,u2:', ts1, um1, ts2, um2
     return ts1, um1, ts2, um2
 ##############################################################################################################
@@ -39,17 +39,17 @@ def solve_bvp_2d(u, pt1, pt2, dim1, dim2):   # solve 2-pt boundary value problem
     #print 'u_m in solve_bvp_2d:', u_m
     Q = (getattr(pt2, dim2) - getattr(pt1, dim2)) / u_m
     a = u_m
-    b = 2 * getattr(pt1, dim2)
-    c = getattr(pt1, dim1) - getattr(pt2, dim1) - (getattr(pt1, dim2) * Q) - (.5 * u_m * (Q ** 2))
-    sqrt_term = (b ** 2) - (4 * a * c)
+    b = 2.0 * getattr(pt1, dim2)
+    c = getattr(pt1, dim1) - getattr(pt2, dim1) - (getattr(pt1, dim2) * Q) - (.5 * u_m * (Q ** 2.0))
+    sqrt_term = (b ** 2.0) - (4.0 * a * c)
     if sqrt_term < 0:
         #print 'sqrt term < 0 , cannot achieve final state with this u1, u2, must reverse order'
         return None, None, None, None
     else:
-        ts1 = (-b + sqrt(sqrt_term)) / (2 * a)
-        tf1 = (2 * ts1) - Q
-        ts2 = (-b - sqrt(sqrt_term)) / (2 * a)
-        tf2 = (2 * ts2) - Q
+        ts1 = (-b + sqrt(sqrt_term)) / (2.0 * a)
+        tf1 = (2.0 * ts1) - Q
+        ts2 = (-b - sqrt(sqrt_term)) / (2.0 * a)
+        tf2 = (2.0 * ts2) - Q
         #print 'solve_bvp_2d ts1,2, tf1,2:', ts1, ts2, tf1, tf2
     return ts1, ts2, tf1, tf2
 ##############################################################################################################

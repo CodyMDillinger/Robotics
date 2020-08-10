@@ -11,11 +11,12 @@ from math import *
 from classes import Colors
 from pywindow_funcs import init_pywindow, user_prompt, label_button, iterate_or_stop
 from sampling_funcs import sample_free
-from geometry_procedures import collisions, steer4, norm
+from geometry_procedures import collisions, steer4
 from search_algorithms import nearest2, add_to_kd_tree, near_vertices2
 from path_funcs import path_generation2, find_optimal_path, collision_free_path, display_path, print_paths
 from list_funcs import update_active, init_arrays, update_pt_lists
 from dynamics import solve_bvp_4d
+from pygame_simulator import run_simulator
 ##############################################################################################################
 
 
@@ -144,7 +145,7 @@ def check_active(new_vertices, i, active_bots, inactive_bots):
 
 def main():
     pywindow, obstacles, axis, buttons = init_pywindow('i-Nash Policy 1')    # set up pygame window, dimensions and obstacles
-    start, goal_set, num_robots, robo_colors, sign = user_prompt(pywindow)     # prompt for num bots, start, end positions
+    start, goal_set, num_robots, robo_colors, sign = user_prompt(pywindow)   # prompt for num bots, start, end positions
     all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num = init_arrays(num_robots)
     k = 1; k_ = 4 * 75000                                                  # total attempted vertices for each robot / 4
     samp_bias = 0                                                          # for biased sampling. See sample_free()
@@ -167,7 +168,7 @@ def main():
     print 'main loop exited'
     label_button(pywindow, buttons[0], 0, 'Running', Colors.dark_green, Colors.white)
     pygame.display.flip()
-    # print_paths(num_robots, goal_pts, pywindow)
+    run_simulator(pywindow, active_bots, paths, costs, robo_colors)
     return
 ##############################################################################################################
 
