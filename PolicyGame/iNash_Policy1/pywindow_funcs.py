@@ -167,6 +167,11 @@ def draw_shapes(pywindow, buttons, obstacles, extra_displays):
 ##############################################################################################################
 
 
+def re_draw_objects():   # re-draw objects
+    return
+##############################################################################################################
+
+
 def init_pywindow(title):                                  # first function to be called from main()
     pygame.init()                                          # initialize usage of pygame
     pygame.display.set_caption(title)
@@ -196,9 +201,9 @@ def get_click_pos(i, pt_type, pt, pywindow, color_dot):    # prompt user to clic
         elif event_click.type == pygame.MOUSEBUTTONDOWN and event_click.button == 1:  # if user clicked in pywindow
             x, y = pygame.mouse.get_pos()                                 # get position of the click
             pt.append(Vertex(x, y, 0, 0))                                 # array of all start/end positions
-            pygame.draw.circle(pywindow, color_dot, (x, y), 10, 0)        # display starting Vertex with color circle
-            pygame.draw.circle(pywindow, color_dot, (world_to_x_plot(x, 0)), 7, 0)
-            pygame.draw.circle(pywindow, color_dot, (world_to_y_plot(y, 0)), 7, 0)
+            pygame.draw.circle(pywindow, color_dot, (x, y), Settings.robo_size, 0)        # display starting Vertex with color circle
+            pygame.draw.circle(pywindow, color_dot, (world_to_x_plot(x, 0)), Settings.robo_size_vel, 0)
+            pygame.draw.circle(pywindow, color_dot, (world_to_y_plot(y, 0)), Settings.robo_size_vel, 0)
             pygame.display.flip()                                         # update display with these new shapes
             waiting = 0
     return exit_pressed, pt

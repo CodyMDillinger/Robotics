@@ -5,7 +5,8 @@
 
 from math import*
 from classes import Dimensions, Settings, Colors, Trajectory
-from geometry_procedures import dist, get_traj_num
+from geometry_procedures import dist
+from trajectories import get_traj_num
 from pywindow_funcs import world_to_y_plot, world_to_x_plot
 import pygame
 ##############################################################################################################
@@ -150,7 +151,33 @@ def get_time(path, robo_num, times, traj__):     # return list of times that rob
 ##############################################################################################################
 
 
+def get_new_path(path):
+    new_path = []
+    for i in range(len(path) - 1):
+        traj_num = get_traj_num(path[i], path[i + 1])
+        for j in range(len(path[i].trajectories[traj_num].states2) - 1):
+            new_path.append(path[i].trajectories[traj_num].states2[j])
+    return new_path
+##############################################################################################################
+
+
 def paths_collision_free(path1, path2, robo1_num, robo2_num, times1, times2):  # check for collisions between two paths
+    collision_free = 1
+    if path2 is not None:
+        new_path1 = get_new_path(path1)
+        new_path2 = get_new_path(path2)
+        for i in range(len(new_path1)):
+            if i > len(new_path2) - 1:
+                pt2 = new_path2[len(new_path2) - 1]
+            else:
+                pt2 = new_path2[i]
+            pt1 = new_path1[i]
+            if abs(pt1.x - pt2.x) < Settings.inter_robot_col_dist and abs(
+                pt1.y - pt2.y) < Settings.inter_robot_col_dist:
+                collision_free = 0
+                break
+
+    """        
     traj__ = Trajectory(1, 1, 1, 1, 1)  # for accessing num_disc_vals
     collision_free = 1
     get_time(path1, robo1_num, times1, traj__)
@@ -169,9 +196,10 @@ def paths_collision_free(path1, path2, robo1_num, robo2_num, times1, times2):  #
             traj1 = get_traj_num(path1[ptnum1], path1[ptnum1 + 1])
             traj2 = get_traj_num(path2[ptnum2], path2[ptnum2 + 1])
             if abs(path1[ptnum1].trajectories[traj1].states[trajnum1].x - path2[ptnum2].trajectories[traj2].states[
-                trajnum2].x) < 10 and abs(
+                trajnum2].x) < Settings.inter_robot_col_dist and abs(
                     path1[ptnum1].trajectories[traj1].states[trajnum1].y - path2[ptnum2].trajectories[traj2].states[
-                        trajnum2].y) < 10:
+                        trajnum2].y) < Settings.inter_robot_col_dist:
+                # inter_robot_col_dist is inter-robot-collision-distance
                 collision_free = 0
                 #print 'collision near times', times1[traj_total1], times2[traj_total2], 'and locations', path1[
                 #    ptnum1].trajectories[traj1].states[trajnum1].x, path2[ptnum2].trajectories[traj2].states[
@@ -194,11 +222,12 @@ def paths_collision_free(path1, path2, robo1_num, robo2_num, times1, times2):  #
             if trajnum1 == traj__.num_disc_vals:
                 trajnum1 = 0
                 ptnum1 = ptnum1 + 1
+                """
     return collision_free
 ##############################################################################################################
 
 
-def collision_free_path(path_check, paths_collide, i):    # see if path_check collides with either path in paths_collide
+def collision_free_path(path_check, paths_collide, i):   # see if path_check collides with either path in paths_collide
     j = i - 1
     times_i = []
     times_j = []

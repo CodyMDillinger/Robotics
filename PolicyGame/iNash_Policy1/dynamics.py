@@ -5,6 +5,8 @@
 
 from classes import Settings, Trajectory, Vertex
 from math import *
+import math
+from pygame_simulator import get_position
 ##############################################################################################################
 
 
@@ -201,10 +203,28 @@ def solve_bvp_4d(pt1, pt2):  # 4-D 2-pt BVP for double integrator, fixed init/fi
     # bang-bang controller is saved same way as bang-off-bang with two switch times that are equal
     trajectory = Trajectory(u_x, ts1_x, u_y, ts1_y, tf)
     get_discrete_states(pt1, pt2, trajectory)
+    get_equi_time_discrete_states(pt1, pt2, trajectory)
     return trajectory
 ##############################################################################################################
 
 
+# similar to get_discrete_states() except this uses global time_step
+# for easier inter-robot collision checking
+def get_equi_time_discrete_states(pt1, pt2, traj):
+    num_steps = int(math.ceil(traj.t_f / Settings.time_step))
+    states = [None] * num_steps
+    for i in range(num_steps):
+        time_ = i * Settings.time_step
+        if time_ > traj.t_f:
+            states[i] = pt2
+        else:
+            states[i] = get_position(pt1, time_, traj)
+        traj.add_states2(states[i])
+    return
+##############################################################################################################
+
+
+# uses global number of discrete states between two points
 def get_discrete_states(pt1, pt2, traj):  # use switch times to sample from a continuous trajectory and save values
     #print 'getting discrete states'
     #print 'pt from:', pt1.x, pt1.y, pt1.x_vel, pt1.y_vel

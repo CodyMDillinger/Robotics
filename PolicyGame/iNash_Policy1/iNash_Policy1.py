@@ -23,13 +23,15 @@ from pygame_simulator import run_simulator
 def add_edge(pt_new, pt_tree, color_, size, pywindow):  # update children and parents for new connections
     pt_new.add_parent(pt_tree)                          # update parent list of new vertex
     pt_tree.add_child(pt_new)                           # update child list of vertex that the new one is connecting to
-    trajectory1 = solve_bvp_4d(pt_tree, pt_new)         # calculate dynamically feasible trajectory btwn two points
+    trajectory1 = solve_bvp_4d(pt_tree, pt_new) # calculate dynamically feasible trajectory btwn two points
+    # traj1 uses global number of states between points
+    # traj2 uses global step_time for states between points
     # trajectory2 = solve_bvp_4d(pt_new, pt_tree)
     pt_tree.add_trajectory(trajectory1)
     # pt_tree.add_trajectory(trajectory2)
-    # pygame.draw.line(pywindow, color_, (pt_new.x, pt_new.y), (pt_tree.x, pt_tree.y), size)
+    #pygame.draw.line(pywindow, color_, (pt_new.x, pt_new.y), (pt_tree.x, pt_tree.y), size)
     # draw_traj(pywindow, color_, pt_new, trajectory1, size)
-    # pygame.display.flip()
+    #pygame.display.flip()
     return
 ##############################################################################################################
 
@@ -97,15 +99,15 @@ def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i, col
     optimal_path = list(path_prev_i)
     optimal_cost = costs_i
     optimal_path, optimal_cost, changed = find_optimal_path(collision_free_paths, costs, optimal_path, optimal_cost, i)
-    if changed:
+    #if changed:
         #print 'path_prev:'
         #for k in range(len(path_prev_i)):
             #print path_prev_i[k].x, path_prev_i[k].y
         #print 'path now:'
         #for k in range(len(optimal_path)):
             #print optimal_path[k].x, optimal_path[k].y
-        display_path(path_prev_i, pywindow, Colors.white)
-        display_path(optimal_path, pywindow, color_)
+        #display_path(path_prev_i, pywindow, Colors.black)
+        #display_path(optimal_path, pywindow, color_)
     return optimal_path, optimal_cost                  # feasible paths here is list of paths for one robot
 ##############################################################################################################
 
@@ -158,6 +160,7 @@ def main():
             k = iterate_or_stop(pywindow, buttons, k, k_)
         for i in inactive_bots:
             check_active(new_vertices, i, active_bots, inactive_bots)
+        print 'active bots:', active_bots
         for i in active_bots:
             paths_prev[i] = list(paths[i])                        # save previous path list before updating list
         k = iterate_or_stop(pywindow, buttons, k, k_)

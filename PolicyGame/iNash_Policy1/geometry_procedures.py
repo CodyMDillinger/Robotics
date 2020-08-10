@@ -6,6 +6,7 @@
 from math import*
 from classes import Vertex, Dimensions, Settings, Trajectory
 from dynamics import solve_bvp_4d
+from trajectories import get_traj_num
 ##############################################################################################################
 
 
@@ -130,18 +131,6 @@ def collisions(pt1, pt2, list_, type_):          # calling collision function fo
             collision_ = 1                       # also check if velocity is too large
             break
     return collision_, intersect
-##############################################################################################################
-
-
-def get_traj_num(pt1, pt2):    # return index of trajectory in pt1.trajectories that ends at pt2
-    traj_num = None
-    for i in range(len(pt1.trajectories)):                              # check last point of each trajectory from pt1
-        if pt1.trajectories[i].states[len(pt1.trajectories[i].states) - 1] == pt2:
-            traj_num = i
-            break
-    if traj_num is None:
-        print 'traj_num not returning an element number'
-    return traj_num
 ##############################################################################################################
 
 

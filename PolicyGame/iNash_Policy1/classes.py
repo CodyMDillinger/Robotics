@@ -60,15 +60,19 @@ class Trajectory:  # storing policy values for bang-bang control and state traje
         self.ts1_y = ts1y
         self.t_f = tf
         self.num_disc_vals = 15  # num discrete pts to include on trajectory. including initial and final values
-        self.states = []  # list of discrete values sampled from continuous state trajectory
+        self.states2 = []        # discrete samples from continuous trajectory
+        self.states = []         # discrete samples from continuous trajectory
         for i in range(self.num_disc_vals):
             self.states.append(Vertex(0, 0, 0, 0))
 
-    u_x1 = 0  # x direction, first control value before switch
-    ts1_x = 0  # switching time for bang-bang controller
-    u_y1 = 0  # y direction, first control value before switch
-    ts1_y = 0  # switching time for bang-bang controller
-    t_f = 0  # arrival time! exciting stuff. wow. it made it all the way there.
+    def add_states2(self, state_):  # since we do not know exact number of states with global time_step
+        self.states2.append(state_)
+
+    u_x1 = 0    # x direction, first control value before switch
+    ts1_x = 0   # switching time for bang-bang controller
+    u_y1 = 0    # y direction, first control value before switch
+    ts1_y = 0   # switching time for bang-bang controller
+    t_f = 0     # arrival time! exciting stuff. wow. it made it all the way there.
 
 
 ##############################################################################################################
@@ -128,15 +132,18 @@ class Settings:                           # for adjusting game-play
         pass
 
     # note: sample bias currently requires inverse to be integer - see sample_free()
-    sample_bias_iterator = 1.0 / 2.0      # fraction of random sampling that uses biased velocity sampling
+    robo_size = 7
+    robo_size_vel = 5
+    sample_bias_iterator = 1.0 / 8.0      # fraction of random sampling that uses biased velocity sampling
     robo_vel_max = 75                     # max velocity for all robots, size of velocity plot changes with this
     robo_finish_vel = 50                  # magnitude of maximum velocity allowed at goal set
     goal_set_size = 14                    # half width of position goal set box
-    robo_mass = 1.0                       # mass of point-mass robot, for 4-d 2-pt boundary value solving
-    max_actuator_force = 35.0             # maximum force used in bang-bang control
+    robo_mass = 1                         # mass of point-mass robot, for 4-d 2-pt boundary value solving
+    max_actuator_force = 50.0             # maximum force used in bang-bang control
     force_normalized = max_actuator_force / robo_mass   # acceleration = force / mass
-    button_text = ['End Planning']
-
+    button_text = ['End Planning']        # initialize button text. changes upon click
+    inter_robot_col_dist = 30             # inter-robot distance to be considered a collision
+    time_step = .05                       # determines how frequently next discrete robot position is calculated
 ##############################################################################################################
 
 
@@ -145,10 +152,10 @@ class Dimensions:  # pywindow, obstacles, radii, theorem 38 calculations
         pass
 
     # size of pywindow display
-    window_length = 600  # length is y length
-    window_width = 600  # width is x length
+    window_length = 600   # length is y length
+    window_width = 1400   # width is x length
     line_width = 3
-    tree_radius = 50.0  # size of radius for steering point towards random vertex
+    tree_radius = 35.0  # size of radius for steering point towards random vertex
     eta = tree_radius * 1.0001  # size of radius in comparison for min() function in near() function
 
     # Vertices of static obstacles
