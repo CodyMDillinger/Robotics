@@ -36,3 +36,5 @@ The above algorithm was used, with dynamically-feasible locally-optimal trajecto
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/i-Nash-Policy.gif" width="500" height="850"/>
 Below is a display of the 2-D simulation of the policy algorithm. Notice the fast-slow-fast-slow etc behavior, due to bang-bang control for a point-mass robot.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/policy_sim_best.gif" width="600" height="800"/>
+Below is the same simulation as above, but for one robot so that the velocity plots are easier to see and understand.
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/single_bot_policy_sim.gif" width="800" height="800"/>
