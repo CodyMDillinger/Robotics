@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+
+  <!-- start the world -->
+  <node name="gazebo" pkg="gazebo_ros" type="gazebo"
+    args="$(find iRobot_create)/worlds/nrsl.world" respawn="false" output="screen" />
+
+  <group ns="robot1">
+    <include file="$(find iRobot_create)/launch/spawn_robot.launch">
+        <arg name="robot_name" value="iRobot_create1" />
+        <arg name="x" value="1" />
+        <arg name="y" value="1" />
+        <arg name="z" value="1.0" />
+        <arg name="roll" value="0"/>
+        <arg name="pitch" value="0"/>
+        <arg name="yaw" value="0.0" />
+        <arg name="sdf_robot_file" value="$(find iRobot_create)/models/create/model-1_4.sdf" />
+    </include>
+  </group>
+
+  <group ns="robot2">
+    <include file="$(find iRobot_create)/launch/spawn_robot.launch">
+        <arg name="robot_name" value="iRobot_create2" />
+        <arg name="x" value="1.0" />
+        <arg name="y" value="-1" />
+        <arg name="z" value="1.0" />
+        <arg name="roll" value="0"/>
+        <arg name="pitch" value="0"/>
+        <arg name="yaw" value="0.0" />
+        <arg name="sdf_robot_file" value="$(find iRobot_create)/models/create/model-1_4.sdf" />
+    </include>
+  </group>
+
+  <group ns="robot3">
+    <include file="$(find iRobot_create)/launch/spawn_robot.launch">
+        <arg name="robot_name" value="iRobot_create3" />
+        <arg name="x" value="-1.0" />
+        <arg name="y" value="-1" />
+        <arg name="z" value="1.0" />
+        <arg name="roll" value="0"/>
+        <arg name="pitch" value="0"/>
+        <arg name="yaw" value="0.0" />
+        <arg name="sdf_robot_file" value="$(find iRobot_create)/models/create/model-1_4.sdf" />
+    </include>
+  </group>
+
+  <group ns="robot4">
+    <include file="$(find iRobot_create)/launch/spawn_robot.launch">
+        <arg name="robot_name" value="iRobot_create4" />
+        <arg name="x" value="-1.0" />
+        <arg name="y" value="1" />
+        <arg name="z" value="1.0" />
+        <arg name="roll" value="0"/>
+        <arg name="pitch" value="0"/>
+        <arg name="yaw" value="0.0" />
+        <arg name="sdf_robot_file" value="$(find iRobot_create)/models/create/model-1_4.sdf" />
+    </include>
+  </group>
+</launch>
