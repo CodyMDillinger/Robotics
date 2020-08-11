@@ -1,8 +1,0 @@
-prefix=/home/codymdillinger/Documents/NRSL/Robotics/Gazebo_Simulator/i_robot_simulator/devel
-
-Name: iRobot_create
-Description: Description of iRobot_create
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
