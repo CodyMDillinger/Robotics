@@ -132,8 +132,8 @@ class Settings:                           # for adjusting game-play
         pass
 
     # note: sample bias currently requires inverse to be integer - see sample_free()
-    robo_size = 7
-    robo_size_vel = 5
+    robo_size = 7                         # size of dot representing robot in position plot
+    robo_size_vel = 5                     # size of dot representing robot in velocity plot
     sample_bias_iterator = 1.0 / 8.0      # fraction of random sampling that uses biased velocity sampling
     robo_vel_max = 75                     # max velocity for all robots, size of velocity plot changes with this
     robo_finish_vel = 50                  # magnitude of maximum velocity allowed at goal set
@@ -142,8 +142,10 @@ class Settings:                           # for adjusting game-play
     max_actuator_force = 50.0             # maximum force used in bang-bang control
     force_normalized = max_actuator_force / robo_mass   # acceleration = force / mass
     button_text = ['End Planning']        # initialize button text. changes upon click
-    inter_robot_col_dist = 30             # inter-robot distance to be considered a collision
+    inter_robot_col_dist = robo_size * 2.1  # inter-robot distance to be considered a collision
     time_step = .05                       # determines how frequently next discrete robot position is calculated
+    simulation_speed = time_step / 2.0    # wait() time between GUI updates in simulation (not a resolution adjustment)
+    collision_cost = 9999999.0            # inf cost for inter-robot collisions
 ##############################################################################################################
 
 

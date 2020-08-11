@@ -7,6 +7,7 @@ import math, time
 import pygame
 from classes import Colors, Vertex, Settings
 from trajectories import get_traj_num
+from path_funcs import display_path
 ##############################################################################################################
 
 
@@ -70,46 +71,42 @@ def get_new_path_list(robots, paths, costs):  # returns list of pts with equal t
 ##############################################################################################################
 
 
-def run_simulator(pywindow, robots, paths_, costs_, colors):    # display robot movement along paths
+def eliminate_collision_paths(paths_, costs_, robots):
     paths = list(paths_)
     costs = list(costs_)
     for i in range(len(paths_)):
-        if paths_[i] == []:                                 # if there is an empty path, cost is 9999 or None
-            print 'empty path found. paths was', len(paths), paths
-            print 'costs was', len(costs), costs
+        if not paths_[i]:  # if there is an empty path, cost is large or None
             paths.remove([])
-            print 'paths after remove is', paths
-            print 'num paths:', len(paths)
-            print 'num robots playing game:', len(robots)
             remove_none = True
             for j in robots:
                 if i == j:
                     robots.remove(j)
-                    colors.pop(costs.index(9999999.0))
-                    print 'index of cost being removed', costs.index(9999999.0)
-                    costs.remove(9999999.0)
-                    print 'empty path was for an active robot. means paths existed but no collision free ones?'
+                    costs.remove(Settings.collision_cost)
                     remove_none = False
                     break
             if remove_none is True:
                 costs.remove(None)
-            print 'costs is', costs
-            print 'num costs is', len(costs)
-    del paths_
-    print 'num robots playing game:', len(robots)
-    print 'num paths, costs:', len(paths), len(costs)
-    positions = get_new_path_list(robots, paths, costs)   # get discrete values with same time_step for all bots
+    return paths, costs
+##############################################################################################################
+
+
+def run_simulator(pywindow, robots, paths_, costs_, colors):    # display robot movement along paths
+    paths, costs = eliminate_collision_paths(paths_, costs_, robots)  # erase active bots that don't have coll_free path
+    del paths_, costs_
+    for i in range(len(paths)):
+        display_path(paths[i], pywindow, colors[robots[i]])
+        time.sleep(.2)
+    positions = get_new_path_list(robots, paths, costs)       # get discrete values with same time_step for all bots
     for i in range(len(positions[0])):                        # for number of time_steps
         for j in range(len(robots)):                          # for each robot
             x = positions[j][i].x
             y = positions[j][i].y
             if i > 0:                                         # if not first point
-                x_prev = positions[j][i - 1].x           # "erase" previous point
+                x_prev = positions[j][i - 1].x                # "erase" previous point
                 y_prev = positions[j][i - 1].y
                 pygame.draw.circle(pywindow, Colors.white, (int(x_prev), int(y_prev)), Settings.robo_size, 0)
-                #pygame.draw.line(pywindow, colors[j], (x_prev, y_prev), (x, y), 2)
-            pygame.draw.circle(pywindow, colors[j], (int(x), int(y)), Settings.robo_size, 0)  # display new point
+            pygame.draw.circle(pywindow, colors[robots[j]], (int(x), int(y)), Settings.robo_size, 0)  # display new point
         pygame.display.flip()
-        time.sleep(Settings.time_step / 2.0)
+        time.sleep(Settings.simulation_speed)
     return
 ##############################################################################################################

@@ -5,7 +5,6 @@
 
 from math import*
 from classes import Dimensions, Settings, Colors, Trajectory
-from geometry_procedures import dist
 from trajectories import get_traj_num
 from pywindow_funcs import world_to_y_plot, world_to_x_plot
 import pygame
@@ -161,20 +160,21 @@ def get_new_path(path):
 ##############################################################################################################
 
 
-def paths_collision_free(path1, path2, robo1_num, robo2_num, times1, times2):  # check for collisions between two paths
+def paths_collision_free(path1, path2, i):
+# def paths_collision_free(path1, path2, robo1_num, robo2_num, times1, times2): check for collisions between paths
     collision_free = 1
     if path2 is not None:
-        new_path1 = get_new_path(path1)
+        new_path1 = get_new_path(path1)              # returns array of all vertices with trajectory points in between
         new_path2 = get_new_path(path2)
-        for i in range(len(new_path1)):
-            if i > len(new_path2) - 1:
-                pt2 = new_path2[len(new_path2) - 1]
+        for i in range(len(new_path1)):              # for all of path1
+            if i > len(new_path2) - 1:               # if path2 shorter than path1 and we are iterating past the end
+                pt2 = new_path2[len(new_path2) - 1]  # then use the last point of path2
             else:
                 pt2 = new_path2[i]
             pt1 = new_path1[i]
-            if abs(pt1.x - pt2.x) < Settings.inter_robot_col_dist and abs(
-                pt1.y - pt2.y) < Settings.inter_robot_col_dist:
-                collision_free = 0
+            if abs(pt1.x - pt2.x) <= Settings.inter_robot_col_dist and abs(  # if paths collide at this time
+                pt1.y - pt2.y) <= Settings.inter_robot_col_dist:
+                collision_free = 0                                          # then return collision
                 break
 
     """        
@@ -228,14 +228,16 @@ def paths_collision_free(path1, path2, robo1_num, robo2_num, times1, times2):  #
 
 
 def collision_free_path(path_check, paths_collide, i):   # see if path_check collides with either path in paths_collide
-    j = i - 1
-    times_i = []
-    times_j = []
-    for k in range(2):
-        collision_free = paths_collision_free(path_check, paths_collide[k], i, j, times_i, times_j)  # call function for both paths
+    # j = i - 1
+    # times_i = []
+    # times_j = []
+    collision_free = 1
+    for k in range(len(paths_collide)):
+        # collision_free = paths_collision_free(path_check, paths_collide[k], i, j, times_i, times_j)  # call function for both paths
+        collision_free = paths_collision_free(path_check, paths_collide[k], i)  # call function for all comparison paths
         if collision_free == 0:
-            return collision_free
-        j = i + 1
-        times_j = []        # reset for next bot. re-use bot i times.
+            break
+        # j = i + 1
+        # times_j = []        # reset for next bot. re-use bot i times.
     return collision_free
 ##############################################################################################################

@@ -8,7 +8,7 @@
 
 import pygame, time, math
 from math import *
-from classes import Colors
+from classes import Colors, Settings
 from pywindow_funcs import init_pywindow, user_prompt, label_button, iterate_or_stop
 from sampling_funcs import sample_free
 from geometry_procedures import collisions, steer4
@@ -24,8 +24,8 @@ def add_edge(pt_new, pt_tree, color_, size, pywindow):  # update children and pa
     pt_new.add_parent(pt_tree)                          # update parent list of new vertex
     pt_tree.add_child(pt_new)                           # update child list of vertex that the new one is connecting to
     trajectory1 = solve_bvp_4d(pt_tree, pt_new) # calculate dynamically feasible trajectory btwn two points
-    # traj1 uses global number of states between points
-    # traj2 uses global step_time for states between points
+    # traj1_states uses global number of states between points
+    # traj1_states2 uses global step_time for states between points
     # trajectory2 = solve_bvp_4d(pt_new, pt_tree)
     pt_tree.add_trajectory(trajectory1)
     # pt_tree.add_trajectory(trajectory2)
@@ -95,7 +95,7 @@ def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i, col
                 costs.append(goalpts[j].costs[k])
     if len(collision_free_paths) == 0:
         print 'paths exist but no inter-robot-collision-free paths for robot', i, 'yet'
-        return [], 9999999.0
+        return [], Settings.collision_cost
     optimal_path = list(path_prev_i)
     optimal_cost = costs_i
     optimal_path, optimal_cost, changed = find_optimal_path(collision_free_paths, costs, optimal_path, optimal_cost, i)
@@ -112,25 +112,14 @@ def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i, col
 ##############################################################################################################
 
 
-def perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts, colors_):
-    i = active_bots[q]
-    if q != 0:                            # if iteration is not first
-        j = active_bots[q - 1]
-        if paths[j] != []:
-            path_compare1 = paths[j]      # compare to robot j < i
-        else:
-            path_compare1 = None          # if there is a robot j < i but hasn't found collision free path yet
-    else:
-        path_compare1 = None              # else no robot j < i
-    if q != len(active_bots) - 1:         # if iteration is not last
-        j2 = active_bots[q + 1]
-        if paths[j2] != []:
-            path_compare2 = paths[j2]     # compare to robot j > i
-        else:
-            path_compare2 = None          # if there is a robot j > i but hasn't found collision free path yet
-    else:
-        path_compare2 = None              # else no robot j > i
-    pi_ = [path_compare1, path_compare2]  # set of two robot paths to compare to
+def perform_better_response(i, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts, colors_):
+    pi_ = [None] * (len(active_bots) - 1)
+    k = 0
+    for q in active_bots:                # for all active robots
+        if q != i:                       # if this active bot is not the one we are collision checking with
+            if paths[q]:                 # if path not empty (if bot active but hasn't found collision free path yet)
+                pi_[k] = paths[q]        # we will collision check with it
+            k = k + 1
     paths[i], costs[i] = better_response(pi_, goal_pts[i], new_vertices[i], paths_prev[i], pywindow, costs[i], i, colors_[i])  # check for collisions with these bots
     return
 ##############################################################################################################
@@ -138,9 +127,9 @@ def perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, 
 
 def check_active(new_vertices, i, active_bots, inactive_bots):
     if new_vertices[i] is not None:
-        if new_vertices[i].at_goal_set:  # if previously inactive bot is now active
+        if new_vertices[i].at_goal_set:                   # if previously inactive bot is now active
             update_active(active_bots, inactive_bots, i)  # then update the inactive and active lists
-            print 'robot', i, 'became active'
+            print 'Robot', i, 'became active. Active robots:', active_bots
     return
 ##############################################################################################################
 
@@ -160,12 +149,11 @@ def main():
             k = iterate_or_stop(pywindow, buttons, k, k_)
         for i in inactive_bots:
             check_active(new_vertices, i, active_bots, inactive_bots)
-        print 'active bots:', active_bots
         for i in active_bots:
             paths_prev[i] = list(paths[i])                        # save previous path list before updating list
         k = iterate_or_stop(pywindow, buttons, k, k_)
-        for q in range(len(active_bots)):                         # use q for easier j < i and j2 > i calculation
-            perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts, robo_colors)
+        for i in active_bots:
+            perform_better_response(i, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts, robo_colors)
             k = iterate_or_stop(pywindow, buttons, k, k_)
         # time.sleep(.05)
     print 'main loop exited'

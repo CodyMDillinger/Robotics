@@ -6,7 +6,6 @@
 from math import*
 from classes import Vertex, Dimensions, Settings, Trajectory
 from dynamics import solve_bvp_4d
-from trajectories import get_traj_num
 ##############################################################################################################
 
 
