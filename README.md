@@ -2,7 +2,7 @@ Owned by Penn State Networked Robotics Systems Laboratory  http://nrsl.mne.psu.e
 
 Using PyGame to display motion planning algorithms in 2 dimensions, integration with Gazebo to simulate 3-D vehicle motion.
 
-PyGame simulation works on Ubuntu 18 or 16, and Python 2.7. If using Python 3.x, may need to change print statements, and some other small things. Gazebo simulation is only for Ubuntu 16 and ROS Kinetic. Will not work with Ubuntu18 and ROS Melodic (already tested). Also only tested Gazebo simulator with Python 2.7.
+This PyGame simulation works on Ubuntu 18 or 16, and Python 2.7. If using Python 3.x, may need to change print statements, and some other small things. Gazebo simulation is only for Ubuntu 16 and ROS Kinetic. Will not work with Ubuntu18 and ROS Melodic (already tested). Also only tested Gazebo simulator with Python 2.7.
 
 Relevant algorithms:
 
