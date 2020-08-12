@@ -114,14 +114,6 @@ def run_simulator(pywindow, robots, paths_, costs_, colors, buttons):  # display
     if call_gazebo is True:
         label_button(pywindow, buttons[1], 1, 'Running 3D', Colors.dark_green, Colors.white)
         pygame.display.flip()
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
         # call gazebo
-    return
+    return positions, call_gazebo
 ##############################################################################################################

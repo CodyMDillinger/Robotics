@@ -70,11 +70,11 @@ def label_plots(pywindow):
 
 
 def label_button(pywindow, button, i, button_text, color_, text_color):
-    rect_ = pygame.Rect(Dimensions.window_width + 2, 1, Dimensions.button_width, Dimensions.button_height)
+    rect_ = pygame.Rect(Dimensions.window_width + 2, button[0].y, Dimensions.button_width, Dimensions.button_height)
     pygame.draw.rect(pywindow, color_, rect_)
     font = pygame.font.SysFont(None, 20)
     render = font.render(button_text, True, text_color)
-    pywindow.blit(render, (button[i].x + 6, button[i].y + 20))
+    pywindow.blit(render, (button[1].x + 6, button[0].y + 20))
     return
 ##############################################################################################################
 
@@ -131,6 +131,7 @@ def init_kd_axes():
 
 
 def draw_buttons(pywindow, buttons):
+    print 'entering draw buttons'
     for i in range(len(buttons)):
         draw_shape(buttons[i], pywindow)
         label_button(pywindow, buttons[i], i, Settings.button_text[i], Colors.dark_blue, Colors.white)
@@ -167,6 +168,7 @@ def draw_shapes(pywindow, buttons, obstacles, extra_displays):
 ##############################################################################################################
 
 
+# might not need
 def re_draw_objects():   # re-draw objects
     return
 ##############################################################################################################
@@ -227,15 +229,33 @@ def end_range(x, y, end_button):
 ##############################################################################################################
 
 
+def wait_for_gazebo_call(buttons):  # wait for user to click the call gazebo 3d simulator button
+    waiting = True
+    call_gazebo = False
+    while waiting:
+        event_click = pygame.event.poll()
+        if event_click.type == pygame.QUIT:  # if user clicked exit
+            waiting = False
+        elif event_click.type == pygame.MOUSEBUTTONDOWN and event_click.button == 1:
+            x, y = pygame.mouse.get_pos()
+            if end_range(x, y, buttons[1]):
+                call_gazebo = True
+                waiting = False
+    return call_gazebo
+##############################################################################################################
+
+
 def iterate_or_stop(pywindow, buttons, k, k_):
     end_planning = False
     event_click = pygame.event.poll()
     if event_click.type == pygame.MOUSEBUTTONDOWN and event_click.button == 1:
         x, y = pygame.mouse.get_pos()
-        for i in range(len(buttons)):
+        """for i in range(len(buttons)):
             if end_range(x, y, buttons[i]):
                 end_planning = True
-                break
+                break"""
+        if end_range(x, y, buttons[0]):
+            end_planning = True
     if end_planning is False:      # allow path planning to end with a click
         k = k + 1
     else:

@@ -8,6 +8,7 @@ import pygame
 from classes import Colors, Vertex, Settings
 from trajectories import get_traj_num
 from path_funcs import display_path
+from pywindow_funcs import label_button, wait_for_gazebo_call
 ##############################################################################################################
 
 
@@ -45,16 +46,16 @@ def get_new_path_list(robots, paths, costs):  # returns list of pts with equal t
     path_pts = [None] * len(robots)            # used for current path point (position = path point + trajectory value)
     time_pts = [None] * len(robots)            # stores time at which robot is at pt in path_pts
     for j in range(len(robots)):               # for all robots
-        print 'getting new path list for robot', robots[j]
+        #print 'getting new path list for robot', robots[j]
         path_traj= [None] * len(paths[j])
-        print 'size of path for robot', robots[j], 'is', len(paths[j])
+        #print 'size of path for robot', robots[j], 'is', len(paths[j])
         for i in range(len(paths[j]) - 1):
-            print 'robot', robots[j], 'vertex number', i
+            #print 'robot', robots[j], 'vertex number', i
             traj_num = get_traj_num(paths[j][i], paths[j][i + 1])
             path_traj[i] = traj_num
         path_pts[j] = 0
         time_pts[j] = 0
-        print 'entering time_step loop. final time:', final_time
+        #print 'entering time_step loop. final time:', final_time
         for i in range(num_steps):                      # for all time steps
             time_ = time_step * i
             if time_ > costs[j]:                        # if robot j arrives sooner than other robots
@@ -90,8 +91,8 @@ def eliminate_collision_paths(paths_, costs_, robots):
 ##############################################################################################################
 
 
-def run_simulator(pywindow, robots, paths_, costs_, colors):    # display robot movement along paths
-    paths, costs = eliminate_collision_paths(paths_, costs_, robots)  # erase active bots that don't have coll_free path
+def run_simulator(pywindow, robots, paths_, costs_, colors, buttons):  # display robot movement along paths
+    paths, costs = eliminate_collision_paths(paths_, costs_, robots)   # erase active bots that don't have coll_free path
     del paths_, costs_
     for i in range(len(paths)):
         display_path(paths[i], pywindow, colors[robots[i]])
@@ -108,5 +109,19 @@ def run_simulator(pywindow, robots, paths_, costs_, colors):    # display robot 
             pygame.draw.circle(pywindow, colors[robots[j]], (int(x), int(y)), Settings.robo_size, 0)  # display new point
         pygame.display.flip()
         time.sleep(Settings.simulation_speed)
+    print 'Done 2D simulation'
+    call_gazebo = wait_for_gazebo_call(buttons)
+    if call_gazebo is True:
+        label_button(pywindow, buttons[1], 1, 'Running 3D', Colors.dark_green, Colors.white)
+        pygame.display.flip()
+        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
+        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
+        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
+        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
+        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
+        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
+        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
+        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
+        # call gazebo
     return
 ##############################################################################################################

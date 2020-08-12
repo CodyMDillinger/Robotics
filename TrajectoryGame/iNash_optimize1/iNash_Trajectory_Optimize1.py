@@ -335,13 +335,13 @@ def path_generation(vertex):
 
 
 def path_generation2(vertex):  # tree traversal. get all paths root to vertex. update vertex.path_list[[]] and vertex.costs[]
-    if vertex.paths == []:
-        print 'paths empty'
-        paths, costs = path_generation(vertex)
-    else:
-        print 'paths already stored'
-        paths = set_to(vertex.paths)
-        costs = set_to(vertex.costs)
+    #if vertex.paths == []:
+        #print 'paths empty'
+    paths, costs = path_generation(vertex)
+    #else:
+    #    print 'paths already stored'
+    #    paths = set_to(vertex.paths)
+    #    costs = set_to(vertex.costs)
     return paths, costs
 ##############################################################################################################
 
@@ -388,10 +388,10 @@ def better_response(pi_, goalpts, vertex, path_prev_i, pywindow, costs_i, i):  #
         path_list_vertex, cost_list_vertex = path_generation2(vertex)
         string = []
         #print 'new goal set vertex.'
-        for i in range(len(path_list_vertex)):
-            for j in range(len(path_list_vertex[i])):
-                string.append(floor(path_list_vertex[i][j].x))
-                string.append(floor(path_list_vertex[i][j].y))
+        for k in range(len(path_list_vertex)):
+            for j in range(len(path_list_vertex[k])):
+                string.append(floor(path_list_vertex[k][j].x))
+                string.append(floor(path_list_vertex[k][j].y))
             #print string
     # enter collision free path procedure here for inter-robot collisions
 
@@ -450,7 +450,7 @@ def main():
     pywindow, obstacles = init_pywindow('iNash trajectory, optimization 1, no inter-robot checking')         # set up pygame window, dimensions and obstacles
     start, goal_set, num_robots, robo_colors = user_prompt(pywindow)          # prompt for num bots, start, end positions
     all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num = init_arrays(num_robots)
-    k = 1; k_ = 10000
+    k = 1; k_ = 20000
     while k < k_:                                                             # main loop
         new_vertices = [None] * num_robots                                    # get list of new vertices each k iteration
         for i in all_bots:                                                    # for all robots
@@ -493,13 +493,15 @@ def main():
     for i in range(num_robots):                             # for all bots
         for j in range(len(goal_pts[i])):                   # for all goal pts for that bot
             for P in range(len(goal_pts[i][j].paths)):      # for all points for that goal pt
-                #if P > 2:
-                #    break
                 string = []
+                string.append(goal_pts[i][j].costs[P])
                 for F in range(len(goal_pts[i][j].paths[P])):
                     string.append(floor(goal_pts[i][j].paths[P][F].x))
                     string.append(floor(goal_pts[i][j].paths[P][F].y))
                 print 'robot', i, ', goalpt', j, ',path', P, ':', string
+                for L in range(len(goal_pts[i][j].paths)):
+                    if goal_pts[i][j].costs[P] == goal_pts[i][j].costs[L]:
+                        print 'repeat cost found'
                 display_path(goal_pts[i][j].paths[P], pywindow, Colors.dark_green)  # display
     return
 ##############################################################################################################

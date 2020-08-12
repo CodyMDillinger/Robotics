@@ -33,7 +33,7 @@ def add_edge(pt_new, pt_tree, color_, size, pywindow):   # update children and p
 def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_, k, x):  # add vertex and edges to sets for robot i
     # vertex_nearest = nearest(vertex_rand, robot_root, robot_root, k)                   # find nearest vertex in robot i's graph, starting with root
     vertex_nearest2 = nearest2(vertex_rand, robot_root, robot_root, robot_root, x)       # computationally efficient function
-    # vertex_new = steer(vertex_nearest, vertex_rand, goal_set)                           # steer that vertex towards x_rand within some radius
+    # vertex_new = steer(vertex_nearest, vertex_rand, goal_set)                          # steer that vertex towards x_rand within some radius
     vertex_new2 = steer4(vertex_nearest2, vertex_rand, goal_set)
     collision_, intersect = collisions(vertex_nearest2, vertex_new2, obstacles, 'obstacles')
     if collision_ == 0:
@@ -42,16 +42,16 @@ def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_,
             # print 'no obstacle collision for goal set vertex, added to kd tree'
         # vertices_near = near_vertices(vertex_new2, robot_root, k, [])
         vertices_near2 = near_vertices2(vertex_new2, robot_root, robot_root, k, [], x)  # computationally efficient function
-        #if vertex_new2.at_goal_set:
-            #print 'near verts found:', len(vertices_near2)
+        # if vertex_new2.at_goal_set:
+            # print 'near verts found:', len(vertices_near2)
         for i in range(len(vertices_near2)):                                    # for all near vertices
             collision_, intersect = collisions(vertices_near2[i], vertex_new2, obstacles, 'obstacles')
             if collision_ == 0:                                                 # if no collision
-                #if vertex_new2.at_goal_set:
-                #    print 'no collision for near vertex, adding edge'
+                # if vertex_new2.at_goal_set:
+                # print 'no collision for near vertex, adding edge'
                 add_edge(vertex_new2, vertices_near2[i], color_, 1, pywindow)   # connect the dots
             else:
-                pass  #print 'collision with near vertex'
+                pass  # print 'collision with near vertex'
     else:
         # print 'collision, extend procedure returning None'
         del vertex_new2      # save storage if point not used

@@ -74,8 +74,8 @@ class Dimensions:
         pass
     window_length = 1000    # size of pywindow display
     window_width = 1000
-    tree_radius = 10       # size of radius for steering point towards random vertex
-    eta = tree_radius * 1.5  # size of radius in comparison for min() function in near() function
+    tree_radius = 14       # size of radius for steering point towards random vertex
+    eta = tree_radius * 1  # size of radius in comparison for min() function in near() function
     goal_set_size = 14
 
     # Vertices of static obstacles

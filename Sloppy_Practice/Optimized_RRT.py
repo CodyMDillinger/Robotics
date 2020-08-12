@@ -173,7 +173,7 @@ def main():
     #print 'xNew1 = ', floor(xNew.x), floor(xNew.y)
     if (collision(xNearest, xNew) == 0):		     # if no collision
       numVertices = numVertices+1			     # number of vertices or nodes, in the tree
-      nearRadius = min(gamma * sqrt(log(numVertices) / numVertices),  radius)
+      nearRadius = min(gamma * sqrt(log(numVertices) / numVertices),  radius+5)
       nearVertices = near(nearRadius, tree, xNew)	     # return point objects. nearRadius is function of num existing samples
       tree.append(xNew)				  	     # append this point element to array regardless of path
       xMin = xNearest;					     # variable for lowest cost point, initializing under assumption of xNearest

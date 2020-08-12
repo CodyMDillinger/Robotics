@@ -685,7 +685,7 @@ def update_pt_lists(vertex_new, goal_pts, new_vertices, i):
 
 
 def main():
-    pywindow, obstacles, axis = init_pywindow('i-Nash Trajectory Final 1')    # set up pygame window, dimensions and obstacles
+    pywindow, obstacles, axis = init_pywindow('i-Nash Trajectory Final 2')    # set up pygame window, dimensions and obstacles
     start, goal_set, num_robots, robo_colors = user_prompt(pywindow)          # prompt for num bots, start, end positions
     all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num = init_arrays(num_robots)
     k = 1; k_ = 8000
@@ -705,6 +705,7 @@ def main():
         for q in range(len(active_bots)):                         # use q for easier j < i and j2 > i calculation
             perform_better_response(q, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts, robo_colors)
         k = k + 1
+        #time.sleep(.05)
     print 'main loop exited'
 
     repeat = False

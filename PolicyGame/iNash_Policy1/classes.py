@@ -134,14 +134,15 @@ class Settings:                           # for adjusting game-play
     # note: sample bias currently requires inverse to be integer - see sample_free()
     robo_size = 7                         # size of dot representing robot in position plot
     robo_size_vel = 5                     # size of dot representing robot in velocity plot
-    sample_bias_iterator = 1.0 / 8.0      # fraction of random sampling that uses biased velocity sampling
+    sample_bias_iterator = 1.0 / 2.0      # fraction of random sampling that uses biased velocity sampling
     robo_vel_max = 75                     # max velocity for all robots, size of velocity plot changes with this
     robo_finish_vel = 50                  # magnitude of maximum velocity allowed at goal set
     goal_set_size = 14                    # half width of position goal set box
     robo_mass = 1                         # mass of point-mass robot, for 4-d 2-pt boundary value solving
     max_actuator_force = 50.0             # maximum force used in bang-bang control
     force_normalized = max_actuator_force / robo_mass   # acceleration = force / mass
-    button_text = ['End Planning']        # initialize button text. changes upon click
+    button_text = ['Start 2D Sim',
+                   'Start 3D Sim']        # INITIALIZE button text. Button location defined in Dimensions
     inter_robot_col_dist = robo_size * 2.1  # inter-robot distance to be considered a collision
     time_step = .05                       # determines how frequently next discrete robot position is calculated
     simulation_speed = time_step / 2.0    # wait() time between GUI updates in simulation (not a resolution adjustment)
@@ -157,12 +158,12 @@ class Dimensions:  # pywindow, obstacles, radii, theorem 38 calculations
     window_length = 600   # length is y length
     window_width = 1400   # width is x length
     line_width = 3
-    tree_radius = 35.0  # size of radius for steering point towards random vertex
+    tree_radius = 60.0   # size of radius for steering point towards random vertex
     eta = tree_radius * 1.0001  # size of radius in comparison for min() function in near() function
 
-    # Vertices of static obstacles
+    # Static Obstacle Definitions
     # Algorithm works for any number of obstacles with any number of vertices
-    # Only small changes here and within obstacle_generation() function
+    # Code will automatically account for any obstacle listed here.
     # Pay attention to vertex order
     window = [Vertex(0, 0, 0, 0), Vertex(0, window_length, 0, 0), Vertex(window_width, window_length, 0, 0),
               Vertex(window_width, 0, 0, 0)]
@@ -172,13 +173,10 @@ class Dimensions:  # pywindow, obstacles, radii, theorem 38 calculations
     obs_list.append([Vertex(200, 420, 0, 0), Vertex(200, 490, 0, 0), Vertex(280, 490, 0, 0), Vertex(280, 420, 0, 0)])
     obs_list.append([Vertex(100, 220, 0, 0), Vertex(170, 290, 0, 0), Vertex(125, 200, 0, 0), Vertex(115, 150, 0, 0)])
     obs_list.append([Vertex(500, 120, 0, 0), Vertex(480, 190, 0, 0), Vertex(575, 190, 0, 0), Vertex(560, 140, 0, 0)])
-    # obs_list.append([Vertex(200, 620, 0, 0), Vertex(280, 690, 0, 0), Vertex(255, 600, 0, 0), Vertex(215, 550, 0, 0)])
     obs_list.append([Vertex(500, 420, 0, 0), Vertex(550, 490, 0, 0), Vertex(575, 400, 0, 0), Vertex(515, 350, 0, 0)])
     obs_list.append([Vertex(320, 330, 0, 0), Vertex(380, 345, 0, 0), Vertex(400, 290, 0, 0), Vertex(350, 305, 0, 0)])
-    # obs_list.append([Vertex(500, 420, 0, 0), Vertex(550, 490, 0, 0), Vertex(575, 400, 0, 0), Vertex(515, 350, 0, 0)])
-    # obs_list.append([Vertex(500, 420, 0, 0), Vertex(550, 490, 0, 0), Vertex(575, 400, 0, 0), Vertex(515, 350, 0, 0)])
-    # obs_list.append([Vertex(500, 420, 0, 0), Vertex(550, 490, 0, 0), Vertex(575, 400, 0, 0), Vertex(515, 350, 0, 0)])
 
+    # Button Definitions
     button_width = 100
     button_height = 100
     button_list = []
@@ -186,8 +184,12 @@ class Dimensions:  # pywindow, obstacles, radii, theorem 38 calculations
                         Vertex(window_width, button_height + 1, 0, 0),
                         Vertex(window_width + button_width, button_height + 1, 0, 0),
                         Vertex(window_width + button_width, 1, 0, 0)])
+    button_list.append([Vertex(window_width, button_height + 3, 0, 0),
+                        Vertex(window_width, (button_height * 2) + 3, 0, 0),
+                        Vertex(window_width + button_width, (button_height * 2) + 3, 0, 0),
+                        Vertex(window_width + button_width, button_height + 3, 0, 0)])
 
-    # For near() vertices functionality:
+    # For near() vertices functionality, where radius value initiates:
     dimen = 4.0
     # for 2-D, unit_ball = 3.1415926 * R**2
     # for 4-D:

@@ -114,3 +114,8 @@ class Dimensions:           # pywindow, obstacles, radii, theorem 38 calculation
     obs2_volume = (obs2[1].y - obs2[0].y) * (obs2[2].x - obs2[1].x)
     total_space = (window_length * window_width) - (obs1_volume + obs2_volume)  # window size minus obstacle size
     gamma = 2 * sqrt(3) * sqrt(total_space / unit_ball)    # from theorem 38 RRT*
+
+    #unit_ball = 3.1415926
+    #obs_volume = 2000 * (len(obs_list) - 1)  # estimation of obstacle volume
+    #total_space = (window_length * window_width) - obs_volume  # window size minus obstacle size
+    #gamma = 2 * sqrt(3) * sqrt(total_space / unit_ball)  # from theorem 38 RRT*
