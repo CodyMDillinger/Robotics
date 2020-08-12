@@ -1,18 +1,18 @@
-Owned by Penn State Networked Robotics Systems Laboratory :)   http://nrsl.mne.psu.edu
+Owned by Penn State Networked Robotics Systems Laboratory  http://nrsl.mne.psu.edu
 
-Using pygame to display motion planning algorithms, integration with Gazebo to simulate vehicle motion
+Using pygame to display motion planning algorithms in 2 dimensions, integration with Gazebo to simulate 3-D vehicle motion.
 
-Testing on Ubuntu18 and Python 2.7
+PyGame simulation works on Ubuntu 18 or 16, and Python 2.7. If using Python 3.x, may need to change print statements, and some other small things. Gazebo simulation is only for Ubuntu 16 and ROS Kinetic. Will not work with Ubuntu18 and ROS Melodic (already tested). Also only tested Gazebo simulator with Python 2.7.
 
-RRT, RRT*, Multi-robot game-theoretic trajectory-based, multi-robot game-theoretic policy-based
+Relevant algorithms:
 
 RRT*:  https://arxiv.org/abs/1105.1186
 
-Trajectory-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/Zhu-Otte-ICRA14.pdf
+i-Nash Trajectory-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/Zhu-Otte-ICRA14.pdf
 
-Policy-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/DJ-MZ-AR-IFAC15.pdf
+i-Nash Policy-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/DJ-MZ-AR-IFAC15.pdf
 
-First gif is RRT but for multiple robots.
+First gif is RRT but for multiple robots, with UI allowing user to enter any number of robots and click the start point and destination point.
 
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/Multi_Bot_RRT.gif" width="450" height="450"/>
 Next 3 gifs are the iNash trajectory algorithm without the pathGeneration() or inter-robot collision checking yet; the difference between the three is the near_radius size, notice the difference in how many connections tend to form from a given vertex.
@@ -30,9 +30,9 @@ First attempt at using an approximate-nearest and approximate-near searching alg
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/bad_approx_nearest.png" width="650" height="650"/>
 Used a k-d tree structure and subtree-pruning (as explained conceptually at https://www.cs.cmu.edu/~ckingsf/bioinfo-lectures/kdtrees.pdf, though I have some differences in my design) to improve computational complexity of near/nearest searching. Finding exact near/nearest, not approximate. Also improved pathGen computational complexity by storing previously calculated paths for given vertices. The two windows in the gif below show the speed differences real-time.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/Computational_Comparison2.gif" width="1000" height="650"/>
-Took the above optimized algorithm and incorporated sampling of the entire state space (4 states: x position, y position, x velocity, y velocity). The top plot shows x,y position, the second plot shows x position vs x velocity, the third plot shows y position vs y velocity. 2nd and 3rd plots only displaying path once found. Notice the difference in the way the tree looks in the position plot, with some portions overlapping - this is because of the extra dimensions - only the 2-D projection of the tree is overlapped, not the actual 4-D tree. Note this still does not include state dynamics. Tree edges are straight lines, not calculated trajectories, yet. The only dynamic constraint included currently is max velocity.
+Took the above optimized algorithm and incorporated sampling of the entire state space (4 states: x position, y position, x velocity, y velocity). The top plot shows x,y position, the second plot shows x position vs x velocity, the third plot shows y position vs y velocity. 2nd and 3rd plots only displaying path once found. Notice the difference in the way the tree looks in the position plot, with some portions overlapping - this is because of the extra dimensions - only the 2-D projection of the tree is overlapped, not the actual 4-D tree. Note this still does not include state dynamics. Tree edges are straight lines, not calculated trajectories, yet. The only dynamic constraint included currently is max velocity. Note many edges may not actually be feasible yet - for example, if the x value increases but the straight line has a negative velocity, this makes no sense.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/iNashTrajFinal3.gif" width="500" height="850"/>
-The above algorithm was used, with dynamically-feasible locally-optimal trajectories calculated for the point-mass double-integrator problem for all edges (the solution is free-final-time bang-bang in 2 dimensions, followed by fixed-final-time sub-bang-bang for the 2 dimensions that would have been faster). The gif below displays the results. Straight edges for the paths are displayed with smaller lines, and the thicker lines are the feasible trajectories. Notice the trajectories have smoother curves, however they result in unnecessary swirling around and turning. This is because while position path may be going right, the discrete points may require a velocity in the reverse direction. This could be fixed with biased-velocity sampling or some other procedure.
+The above algorithm was used, with dynamically-feasible locally-optimal trajectories calculated for the point-mass double-integrator problem for all edges. The solution is: Solve free-final-time bang-bang in 2 dimensions - position and velocity. Solve this twice, once for x and once for y. Keep the one that takes longer, and re-calculate the other as a fixed-final-time problem ("sub-bang-bang" similar to bang-bang except not the max control input). The gif below displays the results. Straight edges for the paths are displayed with smaller lines, and the thicker lines are the feasible trajectories. Notice the trajectories have smoother curves, however they result in unnecessary swirling around and turning. This is because while position path may be going right, the discrete points may require a velocity in the reverse direction. This could be improved with biased-velocity sampling or some other procedure.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/i-Nash-Policy.gif" width="500" height="850"/>
 Below is a display of the 2-D simulation of the policy algorithm. Notice the fast-slow-fast-slow etc behavior, due to bang-bang control for a point-mass robot.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/policy_sim_best.gif" width="600" height="800"/>
