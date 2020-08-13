@@ -38,3 +38,18 @@ Below is a display of the 2-D simulation of the policy algorithm. Notice the fas
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/policy_sim_best.gif" width="600" height="800"/>
 Below is the same simulation as above, but for one robot so that the velocity plots are easier to see and understand.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/single_bot_policy_sim.gif" width="800" height="800"/>
+Algorithm was edited so that each robot has dual-tree forming, meaning trees form from both the starting point and the goal point and they grow towards each other. This method is used in RRT and RRT* because it increases the speed at which a path is found; here, it is even more important because it increases the path variety, meaning that it increases the likelihood that a robot can find a path that does not collide with other robots. Below is a gif showing the slow-motion tree forming for a single robot.
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/dual_tree.gif" width="800" height="600"/>
+This gif below displays for a single robot an example of increased path variety. The path in black is the first path found, then the next one is grey. Note previously the changes would only occur close to the goalset, whereas now path differences can occur at any point along the path.
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/dual_tree_path1.gif" width="800" height="600"/>
+This gif below displays the same thing, but more more robots so you can more easily see the reasoning for wanting more path variety.
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/dual_tree_path5.gif" width="800" height="600"/>
+Here is a display of the same code but with only the chosen paths being displayed, and the robots moving along the chosen path.
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/final_product.gif" width="800" height="600"/>
+Here is some displays with a larger number of robots with more intersections, without paths being displayed, so that you can more easily see the actual robot movement and the lack of collisions.
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/final_product_no_pathdrawing.gif" width="800" height="600"/>
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/final_product_no_pathdrawing2.gif" width="800" height="600"/>
+The next steps would be to:
+1. Improve the storage usage and computational complexity of the inter-robot collision checking procedure (re-calculates 4d-BVP problem many times, stores a larger number of trajectories than may be necessary?)
+2. Send the discrete-vertex path values to Gazebo to control i-robot or ardrone. There does not seem to be an easy method of sending continuous time commands, and we do not know the state model of the 3d robots. So, position commands may be simpler and may make more sense. However, without a powerful enough computer, Gazebo simulations are tough. This gif below, for example, is a recording on my computer of a simple 4-robot 4-pts procedure designed by someone else. Note, my computer has an intel-i5-9400f CPU and a Radeon RX590 GPU, and it still displays this slowly.
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/gazebo_sim2.gif" width="800" height="600"/>
