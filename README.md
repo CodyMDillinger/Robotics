@@ -46,9 +46,9 @@ This gif below displays the same thing, but more more robots so you can more eas
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/dual_tree_path5.gif" width="800" height="600"/>
 Here is a display of the same code but with only the chosen paths being displayed, and the robots moving along the chosen path.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/final_product.gif" width="800" height="600"/>
-Here is some displays with a larger number of robots with more intersections, without paths being displayed, so that you can more easily see the actual robot movement and the lack of collisions.
-<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/final_product_no_pathdrawing.gif" width="800" height="600"/>
-<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/final_product_no_pathdrawing2.gif" width="800" height="600"/>
+Here are some displays with a larger number of robots with more intersections, without paths being displayed, so that you can more easily see the actual robot movement and the lack of collisions.
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/final_product_no_pathdrawing.gif" width="1000" height="600"/>
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/final_product_no_pathdrawing2.gif" width="750" height="600"/>
 The next steps would be to:
 1. Improve the storage usage and computational complexity of the inter-robot collision checking procedure (re-calculates 4d-BVP problem many times, stores a larger number of trajectories than may be necessary?)
 2. Send the discrete-vertex path values to Gazebo to control i-robot or ardrone. There does not seem to be an easy method of sending continuous time commands, and we do not know the state model of the 3d robots. So, position commands may be simpler and may make more sense. However, without a powerful enough computer, Gazebo simulations are tough. This gif below, for example, is a recording on my computer of a simple 4-robot 4-pts procedure designed by someone else. Note, my computer has an intel-i5-9400f CPU and a Radeon RX590 GPU, and it still displays this slowly.
