@@ -37,7 +37,7 @@ The above algorithm was used, with dynamically-feasible locally-optimal trajecto
 Below is a display of the 2-D simulation of the policy algorithm. Notice the fast-slow-fast-slow etc behavior, due to bang-bang control for a point-mass robot.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/policy_sim_best.gif" width="600" height="800"/>
 Below is the same simulation as above, but for one robot so that the velocity plots are easier to see and understand.
-<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/single_bot_policy_sim.gif" width="800" height="800"/>
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/single_bot_policy_sim.gif" width="1100" height="800"/>
 Algorithm was edited so that each robot has dual-tree forming, meaning trees form from both the starting point and the goal point and they grow towards each other. This method is used in RRT and RRT* because it increases the speed at which a path is found; here, it is even more important because it increases the path variety, meaning that it increases the likelihood that a robot can find a path that does not collide with other robots. Below is a gif showing the slow-motion tree forming for a single robot.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/dual_tree.gif" width="800" height="600"/>
 This gif below displays for a single robot an example of increased path variety. The path in black is the first path found, then the next one is grey. Note previously the changes would only occur close to the goalset, whereas now path differences can occur at any point along the path.
