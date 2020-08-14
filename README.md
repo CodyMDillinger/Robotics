@@ -40,9 +40,11 @@ Below is the same simulation as above, but for one robot so that the velocity pl
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/single_bot_policy_sim.gif" width="1100" height="800"/>
 Algorithm was edited so that each robot has dual-tree forming, meaning trees form from both the starting point and the goal point and they grow towards each other. This method is used in RRT and RRT* because it increases the speed at which a path is found; here, it is even more important because it increases the path variety, meaning that it increases the likelihood that a robot can find a path that does not collide with other robots. Below is a gif showing the slow-motion tree forming for a single robot.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/dual_tree.gif" width="800" height="600"/>
-This gif below displays for a single robot an example of increased path variety. The path in black is the first path found, then the next one is grey. Note previously the changes would only occur close to the goalset, whereas now path differences can occur at any point along the path.
+This gif below displays for a single robot an example of increased path variety. The path in black is the first path chosen by the robot, then the next one chosen because it has a lower cost is grey. Note previously the changes would only occur close to the goalset, whereas now path differences can occur at any point along the path.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/dual_tree_path1.gif" width="800" height="600"/>
-This gif below displays the same thing, but more more robots so you can more easily see the reasoning for wanting more path variety.
+The gif below is similar to above, except instead of only displaying paths that the robot had chosen at some point in time, it displays all possible paths. Note these are only paths that are found in the split second between clicking the second grey point and the blue button, and yet it still found that many :)
+<img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/display_all_paths_best.gif" width="800" height="600"/>
+This gif below displays the same thing, but for more robots so you can more easily see the reasoning for wanting more path variety.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/dual_tree_path5.gif" width="800" height="600"/>
 Here is a display of the same code but with only the chosen paths being displayed, and the robots moving along the chosen path.
 <img src="https://github.com/CodyMDillinger/Robotics/blob/master/gifs/final_product.gif" width="800" height="600"/>
