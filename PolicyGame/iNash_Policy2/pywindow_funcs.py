@@ -131,7 +131,6 @@ def init_kd_axes():
 
 
 def draw_buttons(pywindow, buttons):
-    print 'entering draw buttons'
     for i in range(len(buttons)):
         draw_shape(buttons[i], pywindow)
         label_button(pywindow, buttons[i], i, Settings.button_text[i], Colors.dark_blue, Colors.white)
