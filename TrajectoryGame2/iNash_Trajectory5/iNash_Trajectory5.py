@@ -5,7 +5,7 @@
 # Details of this algorithm can be found at http://php.scripts.psu.edu/muz16/pdf/DJ-MZ-AR-IFAC15.pdf
 # Root nodes are the starting points of each robot
 # This is titled Policy TWO
-#   because it expands upon policy 1 by having every robot have two trees form towards each other from root and goal
+# because it expands upon policy 1 by having every robot have two trees form towards each other from root and goal
 
 import pygame, time, math
 from math import *
@@ -56,17 +56,19 @@ def form_trees_and_paths():  # this is the high-level of the algorithm as descri
     #display_paths(goal[0].paths, pywindow, Colors.black)
     #for i in range(len(goal_pts[0])):
         #display_paths(goal_pts[0][i].paths, pywindow, Colors.black)
-    return pywindow, buttons, active_bots, paths, costs, robo_colors, k_end, time_to_path, time_waited
+    return pywindow, buttons, active_bots, paths, costs, robo_colors, k_end, time_to_path, time_waited, num_robots
 ##############################################################################################################
 
 
 def main():
-    pywindow, buttons, active_bots, paths, costs, robo_colors, k_end, robot_times, total_time = form_trees_and_paths()
+    pywindow, buttons, active_bots, paths, costs, robo_colors, k_end, robot_times, total_time, numbots = form_trees_and_paths()
     print 'Main loop exited.'
     print 'Total number of', k_end, 'vertices per robot (including attempted vertices that resulted in static obstacle collisions)'
+    print 'That makes', k_end*numbots, 'total vertices'
     print 'Amount of time taken for robots to find their first path:', robot_times
     print 'Total time waited before clicking run simulation:', total_time
-    #display_paths(paths, pywindow, Colors.light_green)
+    print 'This makes', (k_end*numbots / total_time), 'vertices per second on average'
+    # display_paths(paths, pywindow, Colors.light_green)
     run_simulator(pywindow, active_bots, paths, costs, robo_colors, buttons)
     print 'Done the whole thing, wow, excellent, nice! Super cool!'
     return

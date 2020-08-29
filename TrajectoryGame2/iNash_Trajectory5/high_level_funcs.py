@@ -9,6 +9,7 @@ from geometry_procedures import collisions, steer4, norm
 from search_algorithms import nearest2, add_to_kd_tree, near_vertices2
 from path_funcs import path_generation2, find_optimal_path, collision_free_path, display_path, print_paths
 from classes import Settings, Colors
+from path_funcs import draw_traj
 ##############################################################################################################
 
 
@@ -21,9 +22,9 @@ def add_edge(pt1, pt2, color_, size, pywindow):  # update children and parents f
     # trajectory2 = solve_bvp_4d(pt_new, pt_tree)
     pt2.add_trajectory(trajectory1)
     # pt_tree.add_trajectory(trajectory2)
-    #pygame.draw.line(pywindow, color_, (pt1.x, pt1.y), (pt2.x, pt2.y), size)
-    # draw_traj(pywindow, color_, pt_new, trajectory1, size)
-    #pygame.display.flip()
+    # pygame.draw.line(pywindow, color_, (pt1.x, pt1.y), (pt2.x, pt2.y), size)
+    # draw_traj(pywindow, color_, pt2, trajectory1, size)
+    # pygame.display.flip()
     return
 ##############################################################################################################
 

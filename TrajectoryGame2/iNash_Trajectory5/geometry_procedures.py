@@ -119,7 +119,7 @@ def collision(pt1, pt2, shape, type_):         # check if pt1 to pt2 collides wi
 def collisions(pt1, pt2, list_, type_):          # calling collision function for a list of obstacles
     collision_ = 0; intersect = None
     trajectory_ = solve_bvp_4d(pt1, pt2)         # returns dynamically feasible trajectory between pt1 and pt2
-    states_ = trajectory_.states
+    states_ = trajectory_.statevals
     for i in range(len(list_)):
         for j in range(len(states_) - 1):
             collision_, intersect = collision(states_[j], states_[j+1], list_[i], type_)
@@ -139,7 +139,7 @@ def trace_inclusivity(x_nearest, x_new, goal_set):  # check that trajectory does
         return intersect                                                   # adjust new vertex to the intersection pt
     else:                                                # otherwise check if trajectory hits goal set
         trajectory_ = solve_bvp_4d(x_nearest, x_new)     # returns dynamically feasible trajectory between pt1 and pt2
-        states_ = trajectory_.states                     # discrete list of states in continuous trajectory
+        states_ = trajectory_.statevals                     # discrete list of states in continuous trajectory
         for j in range(len(states_) - 1):                # for all of those states
             collision_, intersect = collision(states_[j], states_[j + 1], goal_set, 'goal')  # if collision with goal
             if collision_ == 1:

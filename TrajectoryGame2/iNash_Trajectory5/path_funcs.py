@@ -7,18 +7,44 @@ from math import*
 from classes import Dimensions, Settings, Colors, Trajectory
 from trajectories import get_traj_num
 from pywindow_funcs import world_to_y_plot, world_to_x_plot
-import pygame
+# from dynamics import get_equi_time_discrete_states
+# from pygame_simulator import get_position
+from classes import Vertex
+import pygame, math
+##############################################################################################################
+
+
+def get_position(pt1, time_, traj):   # difference: for a specific time, not fixed number of states with some time_step
+    ux = traj.u_x1
+    uy = traj.u_y1
+    v1_x = pt1.x_vel + (ux * traj.ts1_x)
+    v1_y = pt1.y_vel + (uy * traj.ts1_y)
+    x1 = pt1.x + (pt1.x_vel * traj.ts1_x) + (.5 * ux * (traj.ts1_x ** 2))
+    y1 = pt1.y + (pt1.y_vel * traj.ts1_y) + (.5 * uy * (traj.ts1_y ** 2))
+    if time_ < traj.ts1_x:
+        x_ = pt1.x + (pt1.x_vel * time_) + (.5 * ux * (time_ ** 2))
+        v_x = pt1.x_vel + (ux * time_)
+    else:
+        x_ = x1 + (v1_x * (time_ - traj.ts1_x)) - (.5 * ux * ((time_ - traj.ts1_x) ** 2))
+        v_x = v1_x - (ux * (time_ - traj.ts1_x))
+    if time_ < traj.ts1_y:
+        y_ = pt1.y + (pt1.y_vel * time_) + (.5 * uy * (time_ ** 2))
+        v_y = pt1.y_vel + (uy * time_)
+    else:
+        y_ = y1 + (v1_y * (time_ - traj.ts1_y)) - (.5 * uy * ((time_ - traj.ts1_y) ** 2))
+        v_y = v1_y - (uy * (time_ - traj.ts1_y))
+    return Vertex(x_, y_, v_x, v_y)
 ##############################################################################################################
 
 
 def draw_traj(window, color_, pt, traj, size):
-    for i in range(len(traj.states) - 1):
-        pygame.draw.line(window, color_, (traj.states[i].x, traj.states[i].y),
-                         (traj.states[i + 1].x, traj.states[i + 1].y), size)
-        pygame.draw.line(window, color_, (world_to_x_plot(traj.states[i].x, traj.states[i].x_vel)),
-                         (world_to_x_plot(traj.states[i + 1].x, traj.states[i + 1].x_vel)), size)
-        pygame.draw.line(window, color_, (world_to_y_plot(traj.states[i].y, traj.states[i].y_vel)),
-                         (world_to_y_plot(traj.states[i + 1].y, traj.states[i + 1].y_vel)), size)
+    for i in range(len(traj.statevals) - 1):
+        pygame.draw.line(window, color_, (traj.statevals[i].x, traj.statevals[i].y),
+                         (traj.statevals[i + 1].x, traj.statevals[i + 1].y), size)
+        pygame.draw.line(window, color_, (world_to_x_plot(traj.statevals[i].x, traj.statevals[i].x_vel)),
+                         (world_to_x_plot(traj.statevals[i + 1].x, traj.statevals[i + 1].x_vel)), size)
+        pygame.draw.line(window, color_, (world_to_y_plot(traj.statevals[i].y, traj.statevals[i].y_vel)),
+                         (world_to_y_plot(traj.statevals[i + 1].y, traj.statevals[i + 1].y_vel)), size)
     pygame.display.flip()
     return
 ##############################################################################################################
@@ -164,13 +190,30 @@ def get_time(path, robo_num, times, traj__):     # return list of times that rob
 ##############################################################################################################
 
 
+def get_equi_time_discrete_states(pt1, pt2, traj):
+    step = Settings.time_step * 5                # only used for collision checking, so don't need as many points
+    num_steps = int(math.ceil(traj.t_f / step))  # larger time step to decrease computations
+    states = [None] * num_steps
+    for i in range(num_steps):
+        time_ = i * step
+        if time_ >= traj.t_f or i == num_steps - 1:
+            states[i] = pt2
+        else:
+            states[i] = get_position(pt1, time_, traj)
+        traj.add_statevals(states[i])
+    return
+##############################################################################################################
+
+
 # given a set of vertices, this returns a fuller list including discrete states in between two vertices
 def get_new_path(path):
     new_path = []
     for i in range(len(path) - 1):
         traj_num = get_traj_num(path[i], path[i + 1])  # returns index of trajectory for point i that leads to point i+1
-        for j in range(len(path[i].trajectories[traj_num].states2) - 1):
-            new_path.append(path[i].trajectories[traj_num].states2[j])
+        if len(path[i].trajectories[traj_num].statevals) == 0:
+            get_equi_time_discrete_states(path[i], path[i + 1], path[i].trajectories[traj_num])
+        for j in range(len(path[i].trajectories[traj_num].statevals) - 1):
+            new_path.append(path[i].trajectories[traj_num].statevals[j])
     return new_path
 ##############################################################################################################
 
@@ -213,23 +256,26 @@ def paths_collision_free(path1, path2, i):
                 pt1.y - pt2.y) <= Settings.inter_robot_col_dist:
                 collision_free = 0
                 break"""
-        new_path1 = get_new_path(path1)           # returns array of all vertices with trajectory points in between
+        new_path1 = get_new_path(path1)              # returns array of all vertices with trajectory points in between
         new_path2 = get_new_path(path2)
-        for i in range(len(new_path1)):              # for all of path1
+        for i in range(max(len(new_path1), len(new_path2))):     # for all of longer path
             if i > len(new_path2) - 1:               # if path2 shorter than path1 and we are iterating past the end
                 pt2 = new_path2[len(new_path2) - 1]  # then use the last point of path2
             else:
                 pt2 = new_path2[i]
-            pt1 = new_path1[i]
+            if i > len(new_path1) - 1:
+                pt1 = new_path1[len(new_path1) - 1]
+            else:
+                pt1 = new_path1[i]
             if abs(pt1.x - pt2.x) <= Settings.inter_robot_col_dist and abs(  # if paths collide at this time
                 pt1.y - pt2.y) <= Settings.inter_robot_col_dist:
-                collision_free = 0                                          # then return collision
+                collision_free = 0                                           # then return collision
                 break
     return collision_free
 ##############################################################################################################
 
 
-def collision_free_path(path_check, paths_collide, i):   # see if path_check collides with either path in paths_collide
+def collision_free_path(path_check, paths_collide, i):   # see if path_check collides with any path in paths_collide
     collision_free = 1
     for k in range(len(paths_collide)):
         collision_free = paths_collision_free(path_check, paths_collide[k], i)  # call function for all comparison paths

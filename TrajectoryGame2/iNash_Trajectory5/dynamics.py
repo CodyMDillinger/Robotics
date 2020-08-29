@@ -157,7 +157,7 @@ def solve_bvp_4d(pt1, pt2):  # 4-D 2-pt BVP for double integrator, fixed init/fi
     ts1_x, ts1_y, tf, u_x, u_y = call_fixed(u_x, u_y, tf_x, tf_y, ts_x, ts_y, pt1, pt2)    # choose 2d BVP soln that has larger tf
     # bang-bang controller is saved same way as bang-off-bang with two switch times that are equal
     trajectory = Trajectory(u_x, ts1_x, u_y, ts1_y, tf)
-    get_discrete_states(pt1, pt2, trajectory)
+    # get_discrete_states(pt1, pt2, trajectory)
     get_equi_time_discrete_states(pt1, pt2, trajectory)
     return trajectory
 ##############################################################################################################
@@ -166,15 +166,16 @@ def solve_bvp_4d(pt1, pt2):  # 4-D 2-pt BVP for double integrator, fixed init/fi
 # similar to get_discrete_states() except this uses global time_step
 # for easier inter-robot collision checking
 def get_equi_time_discrete_states(pt1, pt2, traj):
-    num_steps = int(math.ceil(traj.t_f / (Settings.time_step)))  # larger time step to decrease computations
+    step = Settings.time_step * 5.0              # only used for collision checking, so don't need as many points
+    num_steps = int(math.ceil(traj.t_f / step))  # larger time step to decrease computations
     states = [None] * num_steps
     for i in range(num_steps):
-        time_ = i * Settings.time_step
+        time_ = i * step
         if time_ >= traj.t_f or i == num_steps - 1:
             states[i] = pt2
         else:
             states[i] = get_position(pt1, time_, traj)
-        traj.add_states2(states[i])
+        traj.add_statevals(states[i])
     return
 ##############################################################################################################
 

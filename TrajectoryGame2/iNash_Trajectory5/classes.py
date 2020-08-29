@@ -62,14 +62,18 @@ class Trajectory:  # storing policy values for bang-bang control and state traje
         self.u_y1 = uy1
         self.ts1_y = ts1y
         self.t_f = tf
-        self.num_disc_vals = 15  # num discrete pts to include on trajectory. including initial and final values
-        self.states2 = []        # discrete samples from continuous trajectory
-        self.states = []         # discrete samples from continuous trajectory
-        for i in range(self.num_disc_vals):
-            self.states.append(Vertex(0, 0, 0, 0))
+        self.num_disc_vals = 15    # num discrete pts to include on trajectory. including initial and final values
+        self.statevals = []
+        # self.states2 = []        # discrete samples from continuous trajectory
+        # self.states = []         # discrete samples from continuous trajectory
+        #for i in range(self.num_disc_vals):
+            # self.states.append(Vertex(0, 0, 0, 0))
 
-    def add_states2(self, state_):  # since we do not know exact number of states with global time_step
-        self.states2.append(state_)
+    def add_statevals(self, state_):
+        self.statevals.append(state_)
+
+    # def add_states2(self, state_):  # since we do not know exact number of states with global time_step
+        # self.states2.append(state_)
 
     u_x1 = 0    # x direction, first control value before switch
     ts1_x = 0   # switching time for bang-bang controller
