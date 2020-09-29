@@ -1,6 +1,6 @@
 Owned by Penn State Networked Robotics Systems Laboratory  http://nrsl.mne.psu.edu
 
-Using PyGame to display motion planning algorithms in 2 dimensions, integration with Gazebo to simulate 3-D vehicle motion.
+Using PyGame to display motion planning algorithms in 2 dimensions (2D display, higher dimension state space), integration with Gazebo to simulate 3-D vehicle motion.
 
 This PyGame simulation works on Ubuntu 18 or 16, and Python 2.7. If using Python 3.x, may need to change print statements, and some other small things. Gazebo simulation is only for Ubuntu 16 and ROS Kinetic. Will not work with Ubuntu18 and ROS Melodic (already tested). Also only tested Gazebo simulator with Python 2.7.
 
@@ -11,6 +11,8 @@ RRT*:  https://arxiv.org/abs/1105.1186
 i-Nash Trajectory-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/Zhu-Otte-ICRA14.pdf
 
 i-Nash Policy-based multi-robot planning:  http://php.scripts.psu.edu/muz16/pdf/DJ-MZ-AR-IFAC15.pdf
+
+Below are some gifs as code was developed over time.
 
 First gif is RRT but for multiple robots, with UI allowing user to enter any number of robots and click the start point and destination point.
 
