@@ -17,16 +17,17 @@ from high_level_funcs import extend_graph, perform_better_response, check_active
 ##############################################################################################################
 
 
-def form_trees_and_paths():  # this is the high-level of the algorithm as described at the source linked above
+def form_trees_and_paths():   # this is the high-level of the algorithm as described at the source linked above
     pywindow, obstacles, axis, buttons = init_pywindow(
-        'i-Nash Policy 1')   # set up pygame window, dimensions and obstacles
+        'i-Nash Policy 1')    # set up pygame window, dimensions and obstacles
     start, goal_set, num_robots, robo_colors, sign = user_prompt(pywindow)  # prompt for num bots, start, end positions
     all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num = init_arrays(num_robots)
     k = 1; k_ = 4 * 75000               # total attempted vertices for each robot / 4
     samp_bias = 0                       # for biased sampling. See sample_free()
     while k < k_:                       # main loop
+        k_end = k
         new_vertices = [None] * num_robots   # get list of new vertices each k iteration
-        for i in all_bots:              # for all robots
+        for i in all_bots:                   # for all robots
             vert_rand, samp_bias = sample_free(paths[i], goal_set[i], samp_bias,
                                                sign[i])    # get random Vertex in pywindow
             vert_new = extend_graph(vert_rand, start[i], obstacles, goal_set[i], pywindow, robo_colors[i], k, axis)
@@ -41,7 +42,11 @@ def form_trees_and_paths():  # this is the high-level of the algorithm as descri
             perform_better_response(i, active_bots, paths_prev, paths, costs, pywindow, new_vertices, goal_pts,
                                     robo_colors)
             k = iterate_or_stop(pywindow, buttons, k, k_)  # call this now as scrappy way of seeming more asynchronous
-        # time.sleep(.05)
+    num_paths = 0
+    for i in range(len(goal_pts[0])):
+        num_paths = num_paths + len(goal_pts[0][i].paths)
+    print 'num paths', num_paths
+    print 'num vertices', k_end
     return pywindow, buttons, active_bots, paths, costs, robo_colors
 ##############################################################################################################
 

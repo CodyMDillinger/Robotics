@@ -31,7 +31,7 @@ for i = 1:max_robot_number
            if j == len
                stop = j;
            end
-           scatter(i, plot_data(i, j), 'HandleVisibility', showleg, 'DisplayName', 'Raw Data');  %, 'DisplayName', 'Raw Data');
+           scatter(i, plot_data(i, j), 'HandleVisibility', showleg, 'DisplayName', 'Raw Individual Trial Data');  %, 'DisplayName', 'Raw Data');
            hold on
        else
            stop = j - 1;
@@ -50,35 +50,41 @@ for i = 1:max_robot_number-1
     diff(i) = avg(i+1) - avg(i);
 end
 figure(2);
-plot(diff); title('Difference Plot from Nash Time Average');
-ylabel('Difference in Nash Time');
+plot(diff); title('Difference of Nash Time Average Between Robot Numbers');
+ylabel('Difference in Nash Time (seconds)');
 
+diff2 = [];
+for i = 1:max_robot_number-2
+    diff2(i) = diff(i+1) - diff(i);
+end
+figure(3);
+plot(diff2); title('Difference of Difference of Nash Time Average Between Robot Numbers');
+ylabel('Difference of Difference in Nash Time (seconds)');
 
+avg_avg = [];
+for i = 2:max_robot_number-1
+    avg_avg(i) = mean([avg(i-1), avg(i), avg(i+1)]);
+end
+figure(4);
+plot(avg_avg); title('Nash Time Averaged Between 3 Consecutive Robot Numbers');
+axis([5, max_robot_number, min(avg_avg), max(avg_avg)]);
+ylabel('Average Nash Time (seconds)'); xlabel('Average Robot Number');
 
-%figure(1);
-%plot_data([1:8], [1:12], data, 12);
-%title('Centralized Computing Time to Nash Equilibrium for iNash Trajectory Algorithm')
-%legend('No Static Obstacles, Robots Crossing Paths','Static Obstacles, Robots Crossing Paths','Static Obstacles, Robots Crossing Paths, Part II','No Static Obstacles, Minimal Crossing of Paths','Static Obstacles, Minimal Crossing of Paths','Larger Position Space, No Static Obstacles, Crossing Paths','Larger Position Space, Static Obstacles, Crossing Paths','Larger Position Space, No Obstacles, Minimal Crossing')
-%xlabel('Number of Robots')
-%ylabel('Time (seconds) to reach Nash Equilibrium')
+avg_avg_diff = [];
+for i = 1:max_robot_number-2
+    avg_avg_diff(i) = avg_avg(i+1) - avg_avg(i);
+end
+figure(5);
+plot(avg_avg_diff); title('Difference of Averaged Nash Times, Between Averaged Robot Numbers');
+ylabel('Difference in Averaged Nash Times');
 
-%figure(2);
-%plot_data([17:23], [1:12], data, 12);
-%title('Centralized Computing Time to Nash Equilibrium for iNash Trajectory Algorithm, Averages of Trials')
-%legend('Total Average','No Static Obstacles Average','Static Obstacles Average','Robots Crossing Paths Average','Minimal Crossing Paths Average','Smaller Position Space Average','Larger Position Space Average')
-%xlabel('Number of Robots')
-%ylabel('Time (seconds) to reach Nash Equilibrium')
+avg_avg_diff_diff = [];
 
-%figure(3);
-%plot_data([9:16], [1:12], data, 12);
-%title('Decentralized Computing Time to Nash Equilibrium for iNash Trajectory Algorithm')
-%legend('No Static Obstacles, Robots Crossing Paths','Static Obstacles, Robots Crossing Paths','Static Obstacles, Robots Crossing Paths, Part II','No Static Obstacles, Minimal Crossing of Paths','Static Obstacles, Minimal Crossing of Paths','Larger Position Space, No Static Obstacles, Crossing Paths','Larger Position Space, Static Obstacles, Crossing Paths','Larger Position Space, No Obstacles, Minimal Crossing')
-%xlabel('Number of Robots')
-%ylabel('Time (seconds) to reach Nash Equilibrium')
-
-%figure(4);
-%plot_data([24:30], [1:12], data, 12);
-%title('Decentralized Computing Time to Nash Equilibrium for iNash Trajectory Algorithm, Averages of Trials')
-%legend('Total Average','No Static Obstacles Average','Static Obstacles Average','Robots Crossing Paths Average','Minimal Crossing Paths Average','Smaller Position Space Average','Larger Position Space Average')
-%xlabel('Number of Robots')
-%ylabel('Time (seconds) to reach Nash Equilibrium')
+for i = 1:max_robot_number-3
+    avg_avg_diff_diff(i) = avg_avg_diff(i+1) - avg_avg_diff(i);
+end
+figure(6);
+plot(avg_avg_diff_diff); title('Second Difference Equation of Averaged Nash Times');
+axis([1, max_robot_number-1, -5, 5]);
+ylabel('Second Difference in Averaged Nash Times');
+xlabel('Average Robot Number');

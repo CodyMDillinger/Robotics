@@ -204,7 +204,7 @@ def get_click_pos(i, pt_type, pt, pywindow, color_dot):    # prompt user to clic
             x = float(x)
             y = float(y)
             pt.append(Vertex(x, y, 0, 0))                                 # array of all start/end positions
-            pygame.draw.circle(pywindow, color_dot, (int(x), int(y)), Settings.robo_size, 0)        # display starting Vertex with color circle
+            pygame.draw.circle(pywindow, color_dot, (int(x), int(y)), Settings.robo_size, 0)    # display starting Vertex with color circle
             x_, y_ = world_to_x_plot(x, 0)
             x_ = int(x_)
             y_ = int(y_)
@@ -252,7 +252,7 @@ def wait_for_gazebo_call(buttons):  # wait for user to click the call gazebo 3d 
 ##############################################################################################################
 
 
-def iterate_or_stop(pywindow, buttons, k, k_, increment):
+def iterate_or_stop(pywindow, buttons, k, k_, increment, data):
     end_planning = False
     event_click = pygame.event.poll()
     if event_click.type == pygame.MOUSEBUTTONDOWN and event_click.button == 1:
@@ -264,6 +264,13 @@ def iterate_or_stop(pywindow, buttons, k, k_, increment):
     if end_planning is False:      # allow path planning to end with a click
         if increment is True:
             k = k + 1
+        nash_reached = True
+        for i in range(len(data)):
+            if data[i][0].cost == 9999:
+                nash_reached = False
+                break
+        if nash_reached:
+            k = k_
     else:
         k = k_                     # this will end the main loop
     return k

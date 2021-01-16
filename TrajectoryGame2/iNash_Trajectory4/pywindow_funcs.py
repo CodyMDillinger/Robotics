@@ -16,7 +16,7 @@ def create_shape(pts):                           # given a set of Vertices, conn
 ##############################################################################################################
 
 
-def draw_shape(shape, pywindow):                                          # outline border of shape on pywindow
+def draw_shape(shape, pywindow, color_):                                          # outline border of shape on pywindow
     for pt_num in range(len(shape)):                                      # for all vertices in the shape
         x1, y1 = shape[pt_num].x, shape[pt_num].y                         # point from
         x2, y2 = shape[pt_num].obs_next.x, shape[pt_num].obs_next.y       # point to
@@ -24,7 +24,7 @@ def draw_shape(shape, pywindow):                                          # outl
             x1 = x1 - .5; x2 = x2 - .5      # show display slightly offset left
         elif y1 == y2:                      # if horizontal edge
             y1 = y1 - .5; y2 = y2 - .5      # show display slightly offset up
-        pygame.draw.line(pywindow, Colors.black, (x1, y1), (x2, y2), Dimensions.line_width)   # connect edge between them
+        pygame.draw.line(pywindow, color_, (x1, y1), (x2, y2), Dimensions.line_width)   # connect edge between them
 ##############################################################################################################
 
 
@@ -132,22 +132,22 @@ def init_kd_axes():
 
 def draw_buttons(pywindow, buttons):
     for i in range(len(buttons)):
-        draw_shape(buttons[i], pywindow)
+        draw_shape(buttons[i], pywindow, Colors.dark_blue)
         label_button(pywindow, buttons[i], i, Settings.button_text[i], Colors.dark_blue, Colors.white)
     return
 ##############################################################################################################
 
 
-def draw_obstacles(pywindow, obstacles):
+def draw_obstacles(pywindow, obstacles, color_):
     for i in range(len(obstacles)):
-        draw_shape(obstacles[i], pywindow)
+        draw_shape(obstacles[i], pywindow, color_)
     return
 ##############################################################################################################
 
 
 def draw_extra(pywindow, extras):
     for i in range(len(extras)):
-        draw_shape(extras[i], pywindow)
+        draw_shape(extras[i], pywindow, Colors.dark_blue)
     x = Dimensions.window_length + Dimensions.line_width + Settings.robo_vel_max
     y = x + 2 * Settings.robo_vel_max + Dimensions.line_width
     xy = x + Settings.robo_vel_max
@@ -160,15 +160,19 @@ def draw_extra(pywindow, extras):
 
 def draw_shapes(pywindow, buttons, obstacles, extra_displays):
     draw_buttons(pywindow, buttons)
-    draw_obstacles(pywindow, obstacles)
+    draw_obstacles(pywindow, obstacles, Colors.dark_blue)
     draw_extra(pywindow, extra_displays)
     pygame.display.flip()  # update display with these new shapes
     return
 ##############################################################################################################
 
 
-# might not need
-def re_draw_objects():   # re-draw objects
+def draw_P(pywindow):
+    P = []
+    P.append(create_shape(Dimensions.P[0]))
+    P.append(create_shape(Dimensions.P[1]))
+    draw_obstacles(pywindow, P, Colors.light_blue)
+    pygame.display.flip()
     return
 ##############################################################################################################
 
@@ -186,6 +190,7 @@ def init_pywindow(title):                                  # first function to b
     extra_displays = display_generation(x, y)
     label_plots(pywindow)
     draw_shapes(pywindow, buttons, obstacles, extra_displays)
+    draw_P(pywindow)
     x = init_kd_axes()
     return pywindow, obstacles, x, buttons                 # kd tree will start first row comparing x
 ##############################################################################################################
@@ -204,16 +209,16 @@ def get_click_pos(i, pt_type, pt, pywindow, color_dot):    # prompt user to clic
             x = float(x)
             y = float(y)
             pt.append(Vertex(x, y, 0, 0))                                 # array of all start/end positions
-            pygame.draw.circle(pywindow, color_dot, (int(x), int(y)), Settings.robo_size, 0)        # display starting Vertex with color circle
+            #pygame.draw.circle(pywindow, color_dot, (int(x), int(y)), Settings.robo_size, 0)        # display starting Vertex with color circle
             x_, y_ = world_to_x_plot(x, 0)
             x_ = int(x_)
             y_ = int(y_)
-            pygame.draw.circle(pywindow, color_dot, (x_, y_), Settings.robo_size_vel, 0)
+            #pygame.draw.circle(pywindow, color_dot, (x_, y_), Settings.robo_size_vel, 0)
             x_, y_ = world_to_y_plot(y, 0)
             x_ = int(x_)
             y_ = int(y_)
-            pygame.draw.circle(pywindow, color_dot, (x_, y_), Settings.robo_size_vel, 0)
-            pygame.display.flip()                                         # update display with these new shapes
+            #pygame.draw.circle(pywindow, color_dot, (x_, y_), Settings.robo_size_vel, 0)
+            #pygame.display.flip()                                         # update display with these new shapes
             waiting = 0
     return exit_pressed, pt
 ##############################################################################################################
@@ -255,12 +260,17 @@ def wait_for_gazebo_call(buttons):  # wait for user to click the call gazebo 3d 
 def iterate_or_stop(pywindow, buttons, k, k_, increment):
     end_planning = False
     event_click = pygame.event.poll()
-    if event_click.type == pygame.MOUSEBUTTONDOWN and event_click.button == 1:
-        x, y = pygame.mouse.get_pos()
-        if end_range(x, y, buttons[0]):
-            end_planning = True
-            label_button(pywindow, buttons[0], 0, 'Running 2D', Colors.dark_green, Colors.white)
-            pygame.display.flip()
+    #if event_click.type == pygame.MOUSEBUTTONDOWN and event_click.button == 1:
+    #    x, y = pygame.mouse.get_pos()
+    #    if end_range(x, y, buttons[0]):
+    #        end_planning = True
+    #        label_button(pywindow, buttons[0], 0, 'Running 2D', Colors.dark_green, Colors.white)
+    #        pygame.display.flip()
+    x, y = pygame.mouse.get_pos()
+    if end_range(x, y, buttons[0]):
+        end_planning = True
+        label_button(pywindow, buttons[0], 0, 'Running 2D', Colors.dark_green, Colors.white)
+        pygame.display.flip()
     if end_planning is False:      # allow path planning to end with a click
         if increment is True:
             k = k + 1
@@ -278,10 +288,12 @@ def user_prompt(pywindow):         # prompt for num robots, start and end positi
     sign = num_robots * [None]
     i = 0
     running_ = 1
-    while i < num_robots and running_:                                 # until start/stop selected for all, or exited
-        exit1, start = get_click_pos(i, 'start', start, pywindow, robo_colors[i])      # get start position from user, append
+    while i < num_robots and running_:                                                # until start/stop selected for all, or exited
+        exit1, start = get_click_pos(i, 'start', start, pywindow, robo_colors[i])     # get start position from user, append
+        pygame.draw.circle(pywindow, robo_colors[i], (int(start[i].x), int(start[i].y)), Settings.robo_size, 0)   # display starting Vertex with color circle
+        pygame.display.flip()
         start[i].tree_num = 1
-        exit2, goal_set = get_click_pos(i, 'end', goal_set, pywindow, robo_colors[i])  # get end position from user, append
+        exit2, goal_set = get_click_pos(i, 'end', goal_set, pywindow, robo_colors[i])   # get end position from user, append
         goal_set[i].tree_num = 2
         if abs(goal_set[i].x - start[i].x) > 100:
             signx = True
@@ -306,9 +318,9 @@ def user_prompt(pywindow):         # prompt for num robots, start and end positi
         goal_vel_box = create_shape(pts2)
         goal_vel_box2 = create_shape(pts3)
         goal_set2.append(goal_box)
-        draw_shape(goal_box, pywindow)
-        draw_shape(goal_vel_box, pywindow)
-        draw_shape(goal_vel_box2, pywindow)
+        #draw_shape(goal_box, pywindow)
+        draw_shape(goal_vel_box, pywindow, Colors.black)
+        draw_shape(goal_vel_box2, pywindow, Colors.black)
     pygame.display.flip()
     return start, goal_set2, num_robots, robo_colors, sign, goal_set
 ##############################################################################################################

@@ -7,15 +7,21 @@ import csv
 ##############################################################################################################
 
 
-def write_data_to_csv(data):    # for saving timing and cost data for various trials
-    with open('timing_data_ignore.csv', 'w') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        for i in range(len(data)):
-            data_row = []
-            for j in range(len(data[i])):
-                data_row.append([data[i][j].time, data[i][j].cost])
-            writer.writerow(data_row)
-        writer.writerow([])
+def write_data_to_csv(data, num_robots, type, filename):    # for saving timing and cost data for various trials
+    if type == 'all':
+        with open(filename, 'a') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',') #, quotechar='', quoting=csv.QUOTE_MINIMAL)
+            for i in range(len(data)):
+                data_row = []
+                for j in range(len(data[i])):
+                    #data_row.append([data[i][j].time, data[i][j].cost])
+                    data_row.append(data[i][j].time)
+                writer.writerow(data_row)
+            writer.writerow([])
+    elif type == 'Nash':
+        with open(filename, 'a') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',')
+            writer.writerow([data, num_robots])
     return
 ##############################################################################################################
 

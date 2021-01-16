@@ -7,7 +7,7 @@ from list_funcs import update_active
 from dynamics import solve_bvp_4d
 from geometry_procedures import collisions, steer4, norm
 from search_algorithms import nearest2, add_to_kd_tree, near_vertices2
-from path_funcs import path_generation2, find_optimal_path, collision_free_path, display_path, print_paths
+from path_funcs import path_generation2, find_optimal_path, collision_free_path, display_path, print_paths, display_paths
 from classes import Settings, Colors
 from measurements import MeasurementData
 from path_funcs import draw_traj
@@ -34,7 +34,7 @@ def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_,
     if k == 1:
         add_to_kd_tree(goal, robot_root, x)
     new_paths = False  # initialize
-    if k % 2 == 0:     # nearest is from tree1 from root
+    if k % 2 == 0 or k > 100:     # nearest is from tree1 from root
         tree_num = 1
         first = robot_root
     else:              # nearest is from tree2 from goal (two trees growing towards each other for increased path variety)
@@ -85,6 +85,7 @@ def better_response(pi_, goalpts, vertex, path_prev_i,
     if vertex is not None:
         if vertex.at_goal_set and vertex.tree_num == 1:                          # obtain new paths if new pt is at goal
             path_list_vertex, cost_list_vertex = path_generation2(vertex, root)  # update vertex objects to contain path/cost list
+            #display_paths(path_list_vertex, pywindow, Colors.black)
             new_potential = True
         elif new_paths is True:                                                  # if new path has formed between trees
             path_list_vertex, cost_list_vertex = path_generation2(goal, root)    # update vertex objects
@@ -119,15 +120,15 @@ def better_response(pi_, goalpts, vertex, path_prev_i,
         optimal_path = list(path_prev_i)
         optimal_cost = costs_i
         changed = False
-    """if changed:
+    #if changed:
         #print 'path_prev:'
         #for k in range(len(path_prev_i)):
             #print path_prev_i[k].x, path_prev_i[k].y
         #print 'path now:'
         #for k in range(len(optimal_path)):
             #print optimal_path[k].x, optimal_path[k].y
-        display_path(path_prev_i, pywindow, Colors.black)
-        display_path(optimal_path, pywindow, color_)"""
+        #display_path(path_prev_i, pywindow, Colors.black)
+        #display_path(optimal_path, pywindow, Colors.dark_red)
     return optimal_path, optimal_cost, changed                  # feasible paths here is list of paths for one robot
 ##############################################################################################################
 

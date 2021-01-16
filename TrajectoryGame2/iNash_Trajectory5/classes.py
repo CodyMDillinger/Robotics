@@ -55,6 +55,13 @@ class Vertex:
 ##############################################################################################################
 
 
+class PathVertex:                       # path defined as a list of these objects
+    def __init__(self, vertex_):
+        self.vertex = vertex_           # will be set to vertex object
+        self.traj_element = None        # store index of trajectory in trajectories
+##############################################################################################################
+
+
 class Trajectory:  # storing policy values for bang-bang control and state trajectory
     def __init__(self, ux1, ts1x, uy1, ts1y, tf):
         self.u_x1 = ux1
@@ -154,8 +161,8 @@ class Dimensions:  # pywindow, obstacles, radii, theorem 38 calculations
         pass
 
     # size of pywindow display
-    window_length = 600   # length is y length
-    window_width = 1400   # width is x length
+    window_length = 1200   # length is y length
+    window_width = 1200    # width is x length
     line_width = 3
     tree_radius = 40.0    # size of radius for steering point towards random vertex
     eta = tree_radius * 1.0001  # size of radius in comparison for min() function in near() function
@@ -168,12 +175,12 @@ class Dimensions:  # pywindow, obstacles, radii, theorem 38 calculations
               Vertex(window_width, 0, 0, 0)]
     obs_list = []
     obs_list.append(window)
-    obs_list.append([Vertex(220, 125, 0, 0), Vertex(220, 145, 0, 0), Vertex(300, 145, 0, 0), Vertex(300, 125, 0, 0)])
-    obs_list.append([Vertex(200, 420, 0, 0), Vertex(200, 490, 0, 0), Vertex(280, 490, 0, 0), Vertex(280, 420, 0, 0)])
-    obs_list.append([Vertex(100, 220, 0, 0), Vertex(170, 290, 0, 0), Vertex(125, 200, 0, 0), Vertex(115, 150, 0, 0)])
-    obs_list.append([Vertex(500, 120, 0, 0), Vertex(480, 190, 0, 0), Vertex(575, 190, 0, 0), Vertex(560, 140, 0, 0)])
-    obs_list.append([Vertex(500, 420, 0, 0), Vertex(550, 490, 0, 0), Vertex(575, 400, 0, 0), Vertex(515, 350, 0, 0)])
-    obs_list.append([Vertex(320, 330, 0, 0), Vertex(380, 345, 0, 0), Vertex(400, 290, 0, 0), Vertex(350, 305, 0, 0)])
+    #obs_list.append([Vertex(220, 125, 0, 0), Vertex(220, 145, 0, 0), Vertex(300, 145, 0, 0), Vertex(300, 125, 0, 0)])
+    #obs_list.append([Vertex(200+200, 420+400, 0, 0), Vertex(200+200, 490+400, 0, 0), Vertex(280+400, 490+400, 0, 0), Vertex(280+400, 420+400, 0, 0)])
+    #obs_list.append([Vertex(100+100, 220+300, 0, 0), Vertex(170+200, 290+300, 0, 0), Vertex(125+200, 200+300, 0, 0), Vertex(115+100, 150+300, 0, 0)])
+    #obs_list.append([Vertex(500+300, 120+100, 0, 0), Vertex(480+300, 190+200, 0, 0), Vertex(575+300, 190+200, 0, 0), Vertex(560+300, 140+100, 0, 0)])
+    #obs_list.append([Vertex(500, 420, 0, 0), Vertex(550, 490, 0, 0), Vertex(575, 400, 0, 0), Vertex(515, 350, 0, 0)])
+    #obs_list.append([Vertex(320+600, 330+600, 0, 0), Vertex(380+700, 345+700, 0, 0), Vertex(400+700, 290+600, 0, 0), Vertex(350+600, 305+600, 0, 0)])
 
     # Button Definitions
     button_width = 100
@@ -194,7 +201,7 @@ class Dimensions:  # pywindow, obstacles, radii, theorem 38 calculations
     # for 4-D:
     R = 1.0  # radius of "unit ball"
     unit_ball = .5 * 3.1415926 * (R ** 4)
-    obs_area = 2000.0  # estimated average obstacle 2-D area
+    obs_area = 4000.0  # estimated average obstacle 2-D area
     obs_volume = obs_area * (
                 len(obs_list) - 1) * 4.0 * Settings.robo_vel_max  # total obstacle 4-D lebesgue obstacle space
     total_space = (window_length * window_width * 4.0 * Settings.robo_vel_max)  # total lebesgue space

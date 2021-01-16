@@ -28,12 +28,14 @@ def init_arrays(num_bots):                   # init array sizes for easier modif
     costs = []
     path_num = []
     new_paths = [None] * num_bots
+    time_to_path = [None] * num_bots         # to store time taken for robot to find it's first collision free path
     for i in range(num_bots):                # set of i paths, one per robot
+        time_to_path[i] = 0
         paths.append([])                     # to store current robot paths
         paths_prev.append([])                # to store previous paths before better_response() procedure
         goal_pts.append([])                  # to store points at goal set
         costs.append(None)                   # to store costs of paths in paths[]
-    return all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num, new_paths
+    return all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num, new_paths, time_to_path
 ##############################################################################################################
 
 

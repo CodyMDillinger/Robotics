@@ -51,6 +51,7 @@ def draw_traj(window, color_, pt, traj, size):
 
 
 def display_paths(paths, pywindow, color_):
+    print 'num paths to display:', len(paths)
     for i in range(len(paths)):
         display_path(paths[i], pywindow, color_)
     return

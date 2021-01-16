@@ -9,6 +9,7 @@ from geometry_procedures import collisions, steer4, norm
 from search_algorithms import nearest2, add_to_kd_tree, near_vertices2
 from path_funcs import path_generation2, find_optimal_path, collision_free_path, display_path, print_paths
 from classes import Settings, Colors
+from measurements import MeasurementData
 from path_funcs import draw_traj
 ##############################################################################################################
 
@@ -46,7 +47,7 @@ def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_,
         if tree_num == 1:
             add_edge(vertex_new2, vertex_nearest2, color_, 1, pywindow)  # edge direction depends on which tree nearest vertex is in
         else:
-            add_edge(vertex_nearest2, vertex_new2, Colors.dark_red, 1, pywindow)  # edge direction depends on which tree nearest vertex is in
+            add_edge(vertex_nearest2, vertex_new2, Colors.dark_red, 1, pywindow)        # edge direction depends on which tree nearest vertex is in
         vertices_near2, radius = near_vertices2(vertex_new2, robot_root, robot_root, k, [], x, tree_num)  # computationally efficient function
         for i in range(len(vertices_near2)):                                            # for all near vertices
             if vertices_near2[i] != vertex_nearest2:                                    # since already added nearest
@@ -80,34 +81,44 @@ def extend_graph(vertex_rand, robot_root, obstacles, goal_set, pywindow, color_,
 # minimize cost while avoiding collisions with paths in pi_
 def better_response(pi_, goalpts, vertex, path_prev_i,
                     pywindow, costs_i, i, color_, new_paths,
-                    goal, root, time_to_path):
+                    goal, root, time_to_path, new_potential):
     if vertex is not None:
-        if vertex.at_goal_set and vertex.tree_num == 1:                    # only obtain new paths if new pt is at goal
-            path_list_vertex, cost_list_vertex = path_generation2(vertex, root)  # updates vertex objects to contain path/cost list
-        elif new_paths is True:
-            path_list_vertex, cost_list_vertex = path_generation2(goal, root)    # if new path has formed between trees,
+        if vertex.at_goal_set and vertex.tree_num == 1:                          # obtain new paths if new pt is at goal
+            path_list_vertex, cost_list_vertex = path_generation2(vertex, root)  # update vertex objects to contain path/cost list
+            new_potential = True
+        elif new_paths is True:                                                  # if new path has formed between trees
+            path_list_vertex, cost_list_vertex = path_generation2(goal, root)    # update vertex objects
+            new_potential = True
     collision_free_paths = []
     costs = []
-    for j in range(len(goalpts) + 1):
-        if j == len(goalpts):
-            #print 'number of paths from exact goal point', len(goal.paths)
-            for k in range(len(goal.paths)):
-                if collision_free_path(goal.paths[k], pi_, i) == 1:
-                    collision_free_paths.append(goal.paths[k])
-                    costs.append(goal.costs[k])
-        else:
-            for k in range(len(goalpts[j].paths)):
-                if collision_free_path(goalpts[j].paths[k], pi_, i) == 1:
-                    collision_free_paths.append(goalpts[j].paths[k])
-                    costs.append(goalpts[j].costs[k])
-    if len(collision_free_paths) == 0:
-        print 'paths exist but no inter-robot-collision-free paths for robot', i, 'yet'
-        return [], Settings.collision_cost
-    optimal_path = list(path_prev_i)
-    optimal_cost = costs_i
-    optimal_path, optimal_cost, changed = find_optimal_path(collision_free_paths, costs, optimal_path, optimal_cost, i)
-    if path_prev_i == [] and len(optimal_path) > 0:
-        time_to_path[i] = time.time()
+    if new_potential:  # search for new collision free path if there is new potential (new paths or other robots changed path)
+        for j in range(len(goalpts) + 1):
+            if j == len(goalpts):
+                #print 'number of paths from exact goal point', len(goal.paths)
+                for k in range(len(goal.paths)):
+                    if collision_free_path(goal.paths[k], pi_, i) == 1:
+                        collision_free_paths.append(goal.paths[k])
+                        costs.append(goal.costs[k])
+            else:
+                for k in range(len(goalpts[j].paths)):
+                    if collision_free_path(goalpts[j].paths[k], pi_, i) == 1:
+                        collision_free_paths.append(goalpts[j].paths[k])
+                        costs.append(goalpts[j].costs[k])
+        if len(collision_free_paths) == 0:
+            print 'paths exist but no inter-robot-collision-free paths for robot', i, 'yet'
+            changed = False
+            return [], Settings.collision_cost, changed
+        optimal_path = list(path_prev_i)
+        optimal_cost = costs_i
+        optimal_path, optimal_cost, changed = find_optimal_path(collision_free_paths, costs, optimal_path, optimal_cost, i)
+        if path_prev_i == [] and len(optimal_path) > 0:
+            time_to_path[i][0] = MeasurementData(time.time(), optimal_cost)
+        elif changed:
+            time_to_path[i].append(MeasurementData(time.time(), optimal_cost))
+    else:
+        optimal_path = list(path_prev_i)
+        optimal_cost = costs_i
+        changed = False
     """if changed:
         #print 'path_prev:'
         #for k in range(len(path_prev_i)):
@@ -117,25 +128,28 @@ def better_response(pi_, goalpts, vertex, path_prev_i,
             #print optimal_path[k].x, optimal_path[k].y
         display_path(path_prev_i, pywindow, Colors.black)
         display_path(optimal_path, pywindow, color_)"""
-    return optimal_path, optimal_cost                  # feasible paths here is list of paths for one robot
+    return optimal_path, optimal_cost, changed                  # feasible paths here is list of paths for one robot
 ##############################################################################################################
 
 
-def perform_better_response(i, active_bots, paths_prev, paths,
+def perform_better_response(i, active_bots, paths_prev, paths, changed,
                             costs, pywindow, new_vertices, goal_pts,
                             colors_, new_paths, goal, root, time_to_path):
     pi_ = [None] * (len(active_bots) - 1)
     k = 0
+    new_potential = False                # new potential for robot i to find a more optimal path?
     for q in active_bots:                # for all active robots
         if q != i:                       # if this active bot is not the one we are collision checking with
             if paths[q]:                 # if path not empty (if bot active but hasn't found collision free path yet)
                 pi_[k] = paths[q]        # we will collision check with it
             k = k + 1
+        if changed[q]:           # if some robot changed its path recently
+            new_potential = True         # then there is new potential for robot i to find a more optimal one
+                                         # also is true if robot i generates new path, which is done next
     # check for collisions with these bots
-    paths[i], costs[i] = better_response(pi_, goal_pts[i], new_vertices[i],
-                                         paths_prev[i], pywindow, costs[i],
-                                         i, colors_[i], new_paths, goal, root,
-                                         time_to_path)
+    paths[i], costs[i], changed[i] = better_response(pi_, goal_pts[i], new_vertices[i], paths_prev[i],
+                                                     pywindow, costs[i], i, colors_[i], new_paths,
+                                                     goal, root, time_to_path, new_potential)
     return
 ##############################################################################################################
 

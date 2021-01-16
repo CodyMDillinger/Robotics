@@ -4,7 +4,7 @@
 # Functions related to path generation, path optimizing, and inter-path collisions
 
 from math import*
-from classes import Dimensions, Settings, Colors, Trajectory
+from classes import Dimensions, Settings, Colors, Trajectory, PathVertex
 from trajectories import get_traj_num
 from pywindow_funcs import world_to_y_plot, world_to_x_plot
 # from dynamics import get_equi_time_discrete_states
@@ -60,11 +60,13 @@ def display_paths(paths, pywindow, color_):
 
 def display_path(pts, pywindow, color_):
     for i in range(len(pts) - 1):
-        traj_num = get_traj_num(pts[i], pts[i + 1])
-        draw_traj(pywindow, color_, pts[i], pts[i].trajectories[traj_num], 6)
-        pygame.draw.line(pywindow, color_, (pts[i].x, pts[i].y), (pts[i + 1].x, pts[i + 1].y), 2)
-        pygame.draw.line(pywindow, color_, (world_to_x_plot(pts[i].x, pts[i].x_vel)), (world_to_x_plot(pts[i + 1].x, pts[i + 1].x_vel)), 2)
-        pygame.draw.line(pywindow, color_, (world_to_y_plot(pts[i].y, pts[i].y_vel)), (world_to_y_plot(pts[i + 1].y, pts[i + 1].y_vel)), 2)
+        pt = pts[i].vertex
+        pt2 = pts[i+1].vertex
+        traj_num = pts[i].traj_element
+        draw_traj(pywindow, color_, pt, pt.trajectories[traj_num], 6)
+        pygame.draw.line(pywindow, color_, (pt.x, pt.y), (pt2.x, pt2.y), 2)
+        pygame.draw.line(pywindow, color_, (world_to_x_plot(pt.x, pt.x_vel)), (world_to_x_plot(pt2.x, pt2.x_vel)), 2)
+        pygame.draw.line(pywindow, color_, (world_to_y_plot(pt.y, pt.y_vel)), (world_to_y_plot(pt2.y, pt2.y_vel)), 2)
     pygame.display.flip()
     return
 ##############################################################################################################
@@ -85,18 +87,19 @@ def path_generation(vertex, robot_root):
         traj_num = get_traj_num(vertex.parents[i], vertex)
         cost = vertex.parents[i].trajectories[traj_num].t_f   # additional_cost is arrival time of trajectory from parent
         for j in range(len(paths_parents[i])):                # for number of paths in one of those lists
+            paths_parents[i][j][len(paths_parents[i][j]) - 1].traj_element = traj_num
             paths.append(paths_parents[i][j])                 # append that path to new total list
             costs.append(costs_parents[i][j] + cost)          # append that (parent cost) + (additional_cost) to new total cost list
     for i in range(len(paths)):                # for every path in paths
-        paths[i].append(vertex)                # add the current vertex to that path
+        paths[i].append(PathVertex(vertex))    # add the current vertex as the last vertex to that path
     if len(paths) == 0:                        # if this vertex is the root node
-        paths = [[vertex]]                     # only "path" is itself, and has zero cost
+        paths = [[PathVertex(vertex)]]         # then only "path" is itself, and has zero cost
         costs = [0.0]
     return paths, costs
 ##############################################################################################################
 
 
-def path_generation2(vertex, robot_root):  # tree traversal. get all paths root to vertex. update vertex.path_list[[]] and vertex.costs[]
+def path_generation2(vertex, robot_root):           # tree traversal. get all paths root to vertex. update vertex.path_list[[]] and vertex.costs[]
     if vertex.paths == [] or vertex.tree_num == 2:  # if paths not calculated yet, or if it's in tree2 it can have new parents so new paths
         paths, costs = path_generation(vertex, robot_root)      # then call main path generation procedure
         paths, costs, = fix_and_set_paths(vertex, paths, costs, robot_root)
@@ -107,26 +110,32 @@ def path_generation2(vertex, robot_root):  # tree traversal. get all paths root 
             path = []
             for v in range(len(vertex.paths[p])):
                 path.append(vertex.paths[p][v])
-                if vertex.paths[p][v] == vertex:
+                if vertex.paths[p][v].vertex == vertex:
                     break
             paths[p] = path
     return paths, costs
 ##############################################################################################################
 
 
-def fix_and_set_paths(vertex, paths, costs, robot_root):
+def fix_and_set_paths(vertex, paths, costs, robot_root):  # since pathgen procedure returns paths from tree2 that don't start at root
     paths_ = list(paths)
     costs_ = list(costs)
     num_deletions = 0
     for i in range(len(paths)):
-        if paths[i][0] != robot_root:   # eliminate "paths" that don't start at the robot root
+        if paths[i][0].vertex != robot_root:   # eliminate "paths" that don't start at the robot root
             paths_.pop(i - num_deletions)
             costs_.pop(i - num_deletions)
             num_deletions = num_deletions + 1
     del paths, costs, num_deletions
     for i in range(len(paths_)):         # update vertex objects to store these paths/costs
-        vertex.add_path(paths_[i])
-        vertex.add_cost(costs_[i])
+        new_path = True
+        for j in range(len(vertex.paths)):
+            if vertex.paths[j] == paths_[i]:
+                new_path = False
+                break
+        if new_path:                      # does not have paths_i in it already
+            vertex.add_path(paths_[i])
+            vertex.add_cost(costs_[i])
     return paths_, costs_
 ##############################################################################################################
 
@@ -147,12 +156,7 @@ def find_optimal_path(paths, costs, opt_path, opt_cost, i):
                 opt_path = paths[j]
                 changed = True
                 print 'more optimal path found for robot', i, ', cost:', opt_cost
-                # print 'path_num:', j
-                string = []
-                for k in range(len(opt_path)):
-                    string.append(floor(opt_path[k].x)); string.append(floor(opt_path[k].y))
-                # print string
-                return opt_path, opt_cost, changed     # return upon first optimal path found for computational efficiency
+                break     # return upon first optimal path found for computational efficiency
     return opt_path, opt_cost, changed
 ##############################################################################################################
 
@@ -206,15 +210,25 @@ def get_equi_time_discrete_states(pt1, pt2, traj):
 ##############################################################################################################
 
 
-# given a set of vertices, this returns a fuller list including discrete states in between two vertices
+# given a path set of vertices, this returns a fuller list including discrete states in between two vertices
 def get_new_path(path):
     new_path = []
+    #print 'len(path) :', len(path)
+    #print 'path:', path
     for i in range(len(path) - 1):
-        traj_num = get_traj_num(path[i], path[i + 1])  # returns index of trajectory for point i that leads to point i+1
-        if len(path[i].trajectories[traj_num].statevals) == 0:
-            get_equi_time_discrete_states(path[i], path[i + 1], path[i].trajectories[traj_num])
-        for j in range(len(path[i].trajectories[traj_num].statevals) - 1):
-            new_path.append(path[i].trajectories[traj_num].statevals[j])
+        #print 'i:', i
+        # if len(path[i].trajectories[traj_num].statevals) == 0:
+        #    get_equi_time_discrete_states(path[i], path[i + 1], path[i].trajectories[traj_num])
+        vert = path[i].vertex
+        trajs = vert.trajectories
+        #print 'traj element:', path[i].traj_element
+        #print 'num trajs:', len(trajs)
+        #if len(trajs) == 0:
+            #print 'path pt with no trajectories:', path[i], path[i].vertex.x, path[i].vertex.y
+        traj = trajs[path[i].traj_element]
+        states = traj.statevals
+        for j in range(len(states) - 1):
+            new_path.append(path[i].vertex.trajectories[path[i].traj_element].statevals[j])
     return new_path
 ##############################################################################################################
 

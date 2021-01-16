@@ -3,6 +3,9 @@
 # Cody Dillinger
 # Functions related to updating or creating generic lists
 
+from measurements import MeasurementData
+##############################################################################################################
+
 
 def update_active(active, inactive, i):    # update the list of active robots by adding robot i
     added = False
@@ -28,14 +31,16 @@ def init_arrays(num_bots):                   # init array sizes for easier modif
     costs = []
     path_num = []
     new_paths = [None] * num_bots
-    time_to_path = [None] * num_bots         # to store time taken for robot to find it's first collision free path
+    changed = [None] * num_bots
+    time_to_path = [None] * num_bots         # to store times taken for robot to find its chosen paths
     for i in range(num_bots):                # set of i paths, one per robot
-        time_to_path[i] = 0
+        changed[i] = False                   # to store whether a robot changed its path on last iteration
+        time_to_path[i] = [MeasurementData(0, 9999)]       # to store data on timing of robots finding new paths and Nash being reached
         paths.append([])                     # to store current robot paths
         paths_prev.append([])                # to store previous paths before better_response() procedure
         goal_pts.append([])                  # to store points at goal set
         costs.append(None)                   # to store costs of paths in paths[]
-    return all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num, new_paths, time_to_path
+    return all_bots, active_bots, inactive_bots, paths, costs, paths_prev, goal_pts, path_num, new_paths, time_to_path, changed
 ##############################################################################################################
 
 

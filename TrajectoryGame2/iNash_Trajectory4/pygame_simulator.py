@@ -8,7 +8,7 @@ import pygame
 from classes import Colors, Vertex, Settings
 from trajectories import get_traj_num
 from path_funcs import display_path
-from pywindow_funcs import label_button, wait_for_gazebo_call
+from pywindow_funcs import label_button, wait_for_gazebo_call, draw_obstacles, draw_P
 ##############################################################################################################
 
 
@@ -91,7 +91,7 @@ def eliminate_collision_paths(paths_, costs_, robots):
 ##############################################################################################################
 
 
-def run_simulator(pywindow, robots, paths_, costs_, colors, buttons):  # display robot movement along paths
+def run_simulator(pywindow, robots, paths_, costs_, colors, buttons, obstacles):  # display robot movement along paths
     paths, costs = eliminate_collision_paths(paths_, costs_, robots)   # erase active bots that don't have coll_free path
     del paths_, costs_
     """for i in range(len(paths)):
@@ -106,7 +106,10 @@ def run_simulator(pywindow, robots, paths_, costs_, colors, buttons):  # display
                 x_prev = positions[j][i - 1].x                # "erase" previous point
                 y_prev = positions[j][i - 1].y
                 pygame.draw.circle(pywindow, Colors.white, (int(x_prev), int(y_prev)), Settings.robo_size, 0)
-            pygame.draw.circle(pywindow, colors[robots[j]], (int(x), int(y)), Settings.robo_size, 0)  # display new point
+            #pygame.draw.circle(pywindow, colors[robots[j]], (int(x), int(y)), Settings.robo_size, 0)  # display new point
+            pygame.draw.circle(pywindow, colors[j], (int(x), int(y)), Settings.robo_size, 0)  # display new point
+            draw_obstacles(pywindow, obstacles, Colors.dark_blue)
+            draw_P(pywindow)
         pygame.display.flip()
         time.sleep(Settings.simulation_speed)
     print 'Done 2D simulation'
@@ -114,14 +117,6 @@ def run_simulator(pywindow, robots, paths_, costs_, colors, buttons):  # display
     if call_gazebo is True:
         label_button(pywindow, buttons[1], 1, 'Running 3D', Colors.dark_green, Colors.white)
         pygame.display.flip()
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        print 'Running file that does not connect to Gazebo. Find the one that does. :)'
-        # call gazebo
+        print 'Running file that does not connect to Gazebo. :)'
     return
 ##############################################################################################################
